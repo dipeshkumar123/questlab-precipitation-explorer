@@ -1,0 +1,154 @@
+DECISIONS.md
+  s_72d32dcc9ba14d::t_d5aed1564af5ce 106-119
+  s_72d32dcc9ba14d::t_8beb05b6f76a95 120-121
+README.md
+  s_72d32dcc9ba14d::t_9d0c088d329769 3,46-72
+  s_72d32dcc9ba14d::t_8ab880e266db0a 88
+requirements.txt
+  s_72d32dcc9ba14d::t_0252dc00a4cd36 8-10
+src/questlab/api.py
+  s_72d32dcc9ba14d::t_7742f271b6e107 329-330
+  s_72d32dcc9ba14d::t_db342aea5c94a3 1-328,331-407
+scripts/test_api.py
+  s_72d32dcc9ba14d::t_a2e129e8088d41 109-110
+  s_72d32dcc9ba14d::t_62c5db5ed166e6 116
+  s_72d32dcc9ba14d::t_612c085923e0ec 1-99,104-108,111-115,117-302
+  s_72d32dcc9ba14d::t_e7873a99d01569 100-103
+pyproject.toml
+  s_72d32dcc9ba14d::t_0252dc00a4cd36 18-20,25
+artifacts/api-latency-stage2.json
+  s_72d32dcc9ba14d::t_6ed3abd08990a0 2-6
+  s_72d32dcc9ba14d::t_f2252b7cadbb3e 1,7-9
+SESSION_NOTES.md
+  s_72d32dcc9ba14d::t_5b06198da5e7af 24,38-54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "autter_version": "2.2.1",
+  "base_commit_sha": "b3bfda054d52a2b5a01b8c186e2985743fce3ce9",
+  "branch": "master",
+  "prompts": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:43cfd531797d40a1189d7be4328dc34d2657a197e8e614dfd5b0222ff9f6b13d",
+      "total_additions": 803,
+      "total_deletions": 18,
+      "accepted_lines": 967,
+      "overriden_lines": 0
+    }
+  },
+  "sessions": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:43cfd531797d40a1189d7be4328dc34d2657a197e8e614dfd5b0222ff9f6b13d",
+      "stats": {
+        "total_additions": 803,
+        "total_deletions": 18,
+        "accepted_lines": 967,
+        "overriden_lines": 0,
+        "files": {
+          "DECISIONS.md": {
+            "total_additions": 16,
+            "total_deletions": 0,
+            "accepted_lines": 16,
+            "overriden_lines": 0
+          },
+          "README.md": {
+            "total_additions": 30,
+            "total_deletions": 2,
+            "accepted_lines": 30,
+            "overriden_lines": 0
+          },
+          "SESSION_NOTES.md": {
+            "total_additions": 18,
+            "total_deletions": 2,
+            "accepted_lines": 18,
+            "overriden_lines": 0
+          },
+          "artifacts/api-latency-stage2.json": {
+            "total_additions": 19,
+            "total_deletions": 10,
+            "accepted_lines": 9,
+            "overriden_lines": 0
+          },
+          "data/raw/accumulation-report-2026-11-18-t18.json": {
+            "total_additions": 0,
+            "total_deletions": 0,
+            "accepted_lines": 145,
+            "overriden_lines": 0
+          },
+          "pyproject.toml": {
+            "total_additions": 4,
+            "total_deletions": 0,
+            "accepted_lines": 4,
+            "overriden_lines": 0
+          },
+          "requirements.txt": {
+            "total_additions": 3,
+            "total_deletions": 0,
+            "accepted_lines": 3,
+            "overriden_lines": 0
+          },
+          "scripts/test_api.py": {
+            "total_additions": 304,
+            "total_deletions": 2,
+            "accepted_lines": 302,
+            "overriden_lines": 0
+          },
+          "src/quest_precipitation_explorer.egg-info/PKG-INFO": {
+            "total_additions": 0,
+            "total_deletions": 0,
+            "accepted_lines": 12,
+            "overriden_lines": 0
+          },
+          "src/quest_precipitation_explorer.egg-info/SOURCES.txt": {
+            "total_additions": 0,
+            "total_deletions": 0,
+            "accepted_lines": 10,
+            "overriden_lines": 0
+          },
+          "src/quest_precipitation_explorer.egg-info/dependency_links.txt": {
+            "total_additions": 0,
+            "total_deletions": 0,
+            "accepted_lines": 1,
+            "overriden_lines": 0
+          },
+          "src/quest_precipitation_explorer.egg-info/entry_points.txt": {
+            "total_additions": 0,
+            "total_deletions": 0,
+            "accepted_lines": 2,
+            "overriden_lines": 0
+          },
+          "src/quest_precipitation_explorer.egg-info/requires.txt": {
+            "total_additions": 0,
+            "total_deletions": 0,
+            "accepted_lines": 7,
+            "overriden_lines": 0
+          },
+          "src/quest_precipitation_explorer.egg-info/top_level.txt": {
+            "total_additions": 0,
+            "total_deletions": 0,
+            "accepted_lines": 1,
+            "overriden_lines": 0
+          },
+          "src/questlab/api.py": {
+            "total_additions": 409,
+            "total_deletions": 2,
+            "accepted_lines": 407,
+            "overriden_lines": 0
+          }
+        }
+      }
+    }
+  }
+}
