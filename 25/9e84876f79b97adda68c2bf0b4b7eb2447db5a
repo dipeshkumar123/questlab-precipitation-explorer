@@ -1,0 +1,93 @@
+.gitignore
+  s_72d32dcc9ba14d::t_4903ad927b1f5a 12
+Dockerfile
+  s_72d32dcc9ba14d::t_4903ad927b1f5a 1-19
+scripts/run_local.py
+  s_72d32dcc9ba14d::t_9ba43bb37928ee 1-18,20-29
+  s_72d32dcc9ba14d::t_c64026a2dfd430 19
+README.md
+  s_72d32dcc9ba14d::t_c4b8a52ddff0bc 3,48,51,54,76,88,106-122
+scripts/prepare_deploy.py
+  s_72d32dcc9ba14d::t_0fd6ab23afd6da 17,50
+  s_72d32dcc9ba14d::t_9ba43bb37928ee 38-41,44
+  s_72d32dcc9ba14d::t_4903ad927b1f5a 1-16,18-37,42-43,45-49,51-64
+src/questlab/api.py
+  s_72d32dcc9ba14d::t_0c94093425f312 29,435
+  s_72d32dcc9ba14d::t_3f33a3d7386fc8 23,424-428
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "autter_version": "2.2.1",
+  "base_commit_sha": "259e84876f79b97adda68c2bf0b4b7eb2447db5a",
+  "branch": "master",
+  "prompts": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:9d0b8a17f1eebb7991fa990977bebbb39c57a48f2fe90af81945135e11649c59",
+      "total_additions": 161,
+      "total_deletions": 21,
+      "accepted_lines": 151,
+      "overriden_lines": 0
+    }
+  },
+  "sessions": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:9d0b8a17f1eebb7991fa990977bebbb39c57a48f2fe90af81945135e11649c59",
+      "stats": {
+        "total_additions": 161,
+        "total_deletions": 21,
+        "accepted_lines": 151,
+        "overriden_lines": 0,
+        "files": {
+          ".gitignore": {
+            "total_additions": 1,
+            "total_deletions": 0,
+            "accepted_lines": 2,
+            "overriden_lines": 0
+          },
+          "Dockerfile": {
+            "total_additions": 19,
+            "total_deletions": 0,
+            "accepted_lines": 19,
+            "overriden_lines": 0
+          },
+          "README.md": {
+            "total_additions": 23,
+            "total_deletions": 8,
+            "accepted_lines": 23,
+            "overriden_lines": 0
+          },
+          "scripts/prepare_deploy.py": {
+            "total_additions": 67,
+            "total_deletions": 3,
+            "accepted_lines": 64,
+            "overriden_lines": 0
+          },
+          "scripts/run_local.py": {
+            "total_additions": 30,
+            "total_deletions": 1,
+            "accepted_lines": 29,
+            "overriden_lines": 0
+          },
+          "src/questlab/api.py": {
+            "total_additions": 21,
+            "total_deletions": 9,
+            "accepted_lines": 14,
+            "overriden_lines": 0
+          }
+        }
+      }
+    }
+  }
+}
