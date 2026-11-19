@@ -177,3 +177,5 @@ Rejected alternatives:
 3. A point-only line chart would lose the coherent rain belts and curved bands that explain spatial context; it is retained as the detail view, not the whole product.
 
 **Framework:** Static HTML, CSS, and JavaScript with Canvas for the bounded grids and SVG for the point fingerprint. A small Python build script copies assets and writes `config.js` from `QUEST_API_BASE_URL`; no component framework or frontend server is needed for this one-screen, no-route interaction. React/Vite was rejected because its component state and bundler provide little benefit here but add dependencies and a toolchain. Deployment target: static files in `dist/`; use a same-origin reverse proxy that forwards `/api` to FastAPI and build with an empty base URL, avoiding CORS. Local verification can use `python -m http.server 5173` and the API on port 8000, allowed by the current localhost CORS configuration.
+
+This UX and framework decision is frozen before frontend implementation; any later deviation must be explained against the measured evidence above.
