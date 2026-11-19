@@ -47,7 +47,7 @@
 ## Known issues
 
 - API service currently snapshots latest artifacts at startup; restart it after new pipeline output.
-- Front end and deployment remain unstarted. Do not begin Stage 3 before reporting Stage 2.
+- Deployment remains unstarted and requires the same-origin `/api` reverse proxy described in README.
 
 ## Next
 
@@ -60,4 +60,14 @@
 
 ## Next
 
-Build the static front end described in DECISIONS.md. Verify real backend data, spatial orientation and log colour treatment, then test unavailable backend, stale artifact, and missing-step states before documenting build/deployment.
+## Stage 3 front end complete (2026-11-19)
+
+- Built a static, point-anchored forecast explorer. The two side-by-side fields are bounded to the API's 20°×30° / 9,801-cell maximum and share a log colour scale; clicking a cell loads the four-step AIFS/IFS fingerprint.
+- Browser loaded real Uvicorn API and NetCDF-backed artifacts. Visual review confirms north-to-south latitude, west-to-east longitude, and the Stage 1 YlGnBu-style log palette with values under 0.1 mm masked.
+- Interval view surfaces clipping counts (AIFS 0, IFS 211 on the tested field); point view carries both interval and cumulative values.
+- Browser failure results: stopped Uvicorn showed API unavailable with no stuck loader; current real artifact showed stale age >12 h while still rendering; step 48 showed available steps `[6,12,18,24]`.
+- Build: `python scripts/build_frontend.py`; static output in `dist/`; `QUEST_API_BASE_URL` is injected into `dist/config.js`. Deployment assumes same-origin reverse proxy `/api` to FastAPI; local preview uses port 5173 with the API on 8000.
+
+## Next
+
+Report Stage 3. Do not begin Stage 4 (deployment) until user review.
