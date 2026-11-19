@@ -24,6 +24,15 @@
 - No back end, front end, deployment, or Stage 4 failure-mode test has started.
 - Session rollout path is still to be added to README during handover.
 
+## Stage 2.0 in progress (2026-11-19)
+
+- Re-read DECISIONS.md and these notes before beginning Stage 2.
+- ecCodes packing probe: `grib_get` CLI is absent on Windows; `scripts/probe_packing.py` reads the same message keys through the installed ecCodes library. Every AIFS and IFS message has 12-bit `grid_ccsds`; none of 8.3 million model-step values is at or within one quantization increment of its theoretical ceiling. AIFS has one step-24 maximum at 243.4375 mm, 12.5 mm below ceiling; IFS has one value >500 mm and no value at its 999.75586 mm step-24 ceiling. The tail difference is not clipping and is recorded as model-output divergence.
+- API negative interval decision: clip negative interval values to zero at the API boundary and report clipping counts/flags. Preserve raw signed interval fields and cumulative fields in NetCDF; the public contract warns that clipped interval totals may not telescope exactly.
+- Bounded region contract: one model, step, and field; max 20° latitude ×30° longitude, 81×121=9,801 source cells (10,000 guard), 1 MiB JSON response maximum. One field step/request, point-series ≤64 steps/model.
+- Cold fresh-data-dir ingest benchmark: AIFS 7.294 s, IFS 5.590 s, including download, decode, NetCDF write/reload, and mass-balance verification; both below the 120 s budget. Script/report: `scripts/benchmark_ingest.py` and `artifacts/ingest-latency-stage2-0.json`.
+- NetCDF axes reloaded and JSON-list round-tripped as latitude 90→−90 and longitude −180→179.75, array order `[step_hours, latitude, longitude]`. Live API axis check remains to be confirmed with the HTTP client test.
+
 ## Next
 
-Commit Stage 1.5 after a final repository review. Then stop and report Stage 1 findings and commit hash; do not start Stage 2 until the user has reviewed that report.
+Finish the Stage 2.0 commit with the packing, clipping, payload, timing, and longitude decisions. Then record the backend framework choice and implement/test the read-only API against the Stage 1 NetCDF artifacts. Do not start Stage 3 until the Stage 2 report is delivered.

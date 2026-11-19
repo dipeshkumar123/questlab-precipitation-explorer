@@ -59,3 +59,47 @@ Inspected `artifacts/field-inspection-aifs-single-2026-11-18-t18-step24.png`, re
 - `GET /api/v1/field?model=<model>&stepHours=<n>&kind=interval|cumulative&bbox=<west,south,east,north>&stride=<positive integer>` returns one region as `{run, validTimeUtc, units:"mm", arrayOrder:"[latitude,longitude]", latitudeOrder:"north-to-south", longitudeConvention:"[-180,180)", latitude:[], longitude:[], values:[[]]}`. Bbox uses west/south/east/north degrees; dateline-crossing boxes (`west > east`) are rejected with 400 in v1. Stride is applied after bbox selection; requests above 50,000 cells are rejected with a clear 400 suggesting a larger stride or smaller bbox. Coordinates identify grid-cell centers.
 - `GET /api/v1/health` follows the freshness shape above and returns HTTP 200 when usable data exists (including stale/degraded), 503 only when no valid forecast artifact is available.
 - Missing grid cells serialize as JSON `null`; no silent zero fill. An unavailable step returns HTTP 404 with `availableSteps`; invalid coordinates, model, bbox, or stride return HTTP 400 with a concise error code/message.
+
+## 2026-11-19 — Stage 2.0 data-layer flags closed
+
+### 2.0.1 Packing and AIFS/IFS tail discrepancy
+
+`grib_get` is not installed or on PATH on this Windows machine. I used the ECMWF ecCodes Python bindings (the installed package ships the ecCodes binary library) to read the exact requested keys directly from each message; the reproducible probe is `scripts/probe_packing.py`. The output-equivalent tuple below is `packingType, bitsPerValue, binaryScaleFactor, decimalScaleFactor, numberOfValues`; all messages have `referenceValue=0`.
+
+| Model | Step | ecCodes key tuple | Decoded max / count | Representable ceiling / count at ceiling |
+|---|---:|---|---:|---:|
+| AIFS | 6 | `grid_ccsds, 12, -5, 0, 1038240` | 79.875 mm / 1 | 127.96875 mm / 0 |
+| AIFS | 12 | `grid_ccsds, 12, -4, 0, 1038240` | 145.9375 mm / 1 | 255.9375 mm / 0 |
+| AIFS | 18 | `grid_ccsds, 12, -4, 0, 1038240` | 195.75 mm / 1 | 255.9375 mm / 0 |
+| AIFS | 24 | `grid_ccsds, 12, -4, 0, 1038240` | 243.4375 mm / 1 | 255.9375 mm / 0 |
+| IFS | 6 | `grid_ccsds, 12, -14, 0, 1038240` | 193.66455 mm / 1 | 249.93896 mm / 0 |
+| IFS | 12 | `grid_ccsds, 12, -13, 0, 1038240` | 361.93848 mm / 1 | 499.87793 mm / 0 |
+| IFS | 18 | `grid_ccsds, 12, -13, 0, 1038240` | 475.09766 mm / 1 | 499.87793 mm / 0 |
+| IFS | 24 | `grid_ccsds, 12, -12, 0, 1038240` | 574.70703 mm / 1 | 999.75586 mm / 0 |
+
+No values equal the theoretical packing ceiling, and no values are within one quantization increment of it. AIFS step-24's maximum is 12.5 mm below its 255.9375 mm ceiling (200 quantization increments); IFS step-24's maximum is 425.0488 mm below its ceiling. There is no evidence of ceiling clipping in these fields; changing `bitsPerValue` is unnecessary. The AIFS max of 243.4375 mm is one grid cell; IFS has one point above 500 mm, 14 above 250 mm, and 31 above 200 mm, versus 0, 0, and 13 in AIFS. A 3×3 neighborhood around the IFS 574.707 mm point contains 574.7, 280.0, and 256.8 mm cells; the corresponding AIFS neighborhood ranges 96.5–126.6 mm. The same-grid forecasts therefore show a localized heavier IFS tail, not a packing ceiling. The similar global means do not refute this: a localized set of 31 cells above 200 mm has little weight in a 1,038,240-cell global mean. Record this as real model-output divergence for the Stage 3 model-agreement UX; do not imply either model is verified as more accurate.
+
+### 2.0.2 Negative interval policy
+
+The processed NetCDF retains signed raw interval differences so they conserve the cumulative values exactly. At the API boundary, clip negative interval values to `0 mm` because the observed negatives are at the CCSDS quantization scale (≤0.1221 mm) and negative precipitation is not useful to a viewer. Do not hide the change: each model result includes `negativeIntervalPolicy:"clip-to-zero"`, a count of clipped values (`clippedIntervalCount` for a point; `clippedCellCount` for a region), and a boolean indicating whether any value was clipped. Cumulative fields remain unchanged and authoritative; clipped public intervals may not sum exactly to cumulative values at affected cells. The client contract and implementation must carry these fields.
+
+### 2.0.3 Enforced response bounds
+
+The region endpoint returns exactly one model, one step, and one field per request. Accept at most 20° latitude span × 30° longitude span; on this 0.25° grid that is at most 81×121 = 9,801 cells. Enforce a second cap of 10,000 cells after selection/stride. Each request can contain one forecast step; point-series responses return at most 64 steps per model (the longest configured AIFS horizon is 61 six-hour steps). Serialize coordinates and float32 field values as JSON numbers, with missing values as `null`, and reject any response above 1,048,576 bytes with HTTP 413. This bounded JSON format is simple for a static frontend and remains below the 1 MiB cap at the specified cell count; the measured largest region response will be recorded after endpoint implementation.
+
+The API intentionally serves only each model's `latest.json` run. Historical processed directories remain on disk for manual reproducibility but are not discoverable or requestable through v1; adding a run-list endpoint is deferred.
+
+### 2.0.4 Cold ingest timing
+
+Measured with `scripts/benchmark_ingest.py` on 2026-11-19 for the pinned 2026-11-18 18Z run. Each model used a new empty data directory, so retrieval, GRIB decoding, cfgrib index creation, NetCDF write, reload, and conservation verification were all included. AIFS completed in **7.294 s**, IFS in **5.590 s**, against the 120 s design budget. Both finished with zero mass-balance error. These are single-run wall-clock observations over the current connection, not a guarantee under a slow network or an ECMWF outage. The JSON measurements are in `artifacts/ingest-latency-stage2-0.json`.
+
+### 2.0.5 Longitude convention and round-trip
+
+The processed NetCDF for both models reloads with latitude `90.0 → −90.0` (north-to-south) and longitude `−180.0 → 179.75` (ascending, convention `[-180, 180)`). The values remain ordered `[step_hours, latitude, longitude]`. `scripts/verify_longitude.py` round-tripped both full axis arrays through the same JSON list representation planned for `/api/v1/field` and verified neither axis flips. The API must return these axes directly, with `arrayOrder:"[latitude,longitude]"`; the live HTTP response will be asserted by the Stage 2 client test before this task is finally considered closed.
+
+### Updated v1 contract requirements
+
+- Stale data remains servable; point and field responses include `stale` and `ageSeconds`. Freshness is based on run age ≤12 hours.
+- Health reports `sourceRunUtc`, `retrievedAtUtc`, `stepsHours`, `processingVersion`, `ageSeconds`, `stale`, and `lastIngestSucceeded` per available model. No valid latest artifact means HTTP 503.
+- The field and point shapes carry the negative-interval clipping metadata above. Cumulative values are never clipped.
+- Region bounds, response field count, step count, byte cap, JSON error shape, and longitude/array conventions follow Tasks 2.0.2–2.0.5. Every error is `{"error":{"code":"...","message":"...","details":{...}}}`; `details` may be empty.
