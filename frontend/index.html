@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f6f3">
+    <title>QUEST | Rainfall fingerprint</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="config.js"></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <a class="brand" href="#top" aria-label="QUEST rainfall explorer home"><span class="brand-mark">Q</span><span>QUEST <small>FIELD NOTES / 01</small></span></a>
+        <div class="masthead-right"><span class="live-dot"></span><span>FORECAST EXPLORER</span></div>
+      </header>
+
+      <section class="intro" id="top">
+        <p class="eyebrow">PRECIPITATION · ECMWF OPEN DATA</p>
+        <h1>Follow the rain.<br><em>Find its fingerprint.</em></h1>
+        <p class="intro-copy">Compare the forecast field around a place, then follow the full rainfall sequence at any grid cell.</p>
+      </section>
+
+      <section id="service-banner" class="service-banner" role="status" aria-live="polite" hidden></section>
+
+      <section class="freshness-card" aria-label="Forecast freshness">
+        <div class="freshness-top"><span class="eyebrow">LATEST VERIFIED RUN</span><span id="freshness-state" class="state-pill pending">CHECKING</span></div>
+        <div class="freshness-grid">
+          <div><span class="meta-label">INITIALIZED</span><strong id="run-time">—</strong></div>
+          <div><span class="meta-label">FORECAST AGE</span><strong id="forecast-age">—</strong></div>
+          <div><span class="meta-label">LAST INGEST</span><strong id="ingest-state">—</strong></div>
+        </div>
+        <p id="valid-time" class="valid-time">Valid time will appear after a forecast step is selected.</p>
+      </section>
+
+      <section class="controls-card" aria-label="Regional forecast controls">
+        <div class="controls-heading"><div><p class="eyebrow">01 / SET YOUR WINDOW</p><h2>A region, two forecasts</h2></div><p class="fineprint">Each view is bounded to 20° × 30°.<br>About 25 km between grid points.</p></div>
+        <div class="controls-grid">
+          <label>Center latitude <span>° N</span><input id="center-lat" type="number" min="-90" max="90" step="0.25" value="-12.5"></label>
+          <label>Center longitude <span>° E/W</span><input id="center-lon" type="number" min="-180" max="179.75" step="0.25" value="-155"></label>
+          <label>Forecast step <span>hours</span><input id="step-hours" type="number" min="1" max="360" step="1" value="24"></label>
+          <label>Field shown <span>millimetres</span><select id="field-kind"><option value="cumulative">Cumulative total</option><option value="interval">6-hour increment</option></select></label>
+          <button id="load-region" class="button-primary" type="button"><span>Load region</span><span aria-hidden="true">↗</span></button>
+        </div>
+        <p id="region-description" class="region-description">Regional window follows the selected center. Choose a valid step to update both fields.</p>
+      </section>
+
+      <section class="field-section" aria-label="Model field comparison">
+        <div class="section-heading"><div><p class="eyebrow">02 / THE FIELD</p><h2>Same sky, different models</h2></div><p id="scale-note" class="scale-note">Shared logarithmic colour scale · loading</p></div>
+        <div class="field-grid">
+          <article class="field-panel" data-model="aifs-single">
+            <div class="panel-head"><div><span class="model-index">A</span><div><h3>AIFS Single</h3><p>Artificial Intelligence Forecasting System</p></div></div><span id="aifs-cell-count" class="cell-count">— CELLS</span></div>
+            <div class="canvas-wrap"><canvas id="field-aifs" role="img" aria-label="AIFS precipitation field, longitude left to right and latitude north to south">Loading AIFS field…</canvas><div id="field-aifs-message" class="canvas-message">Loading field…</div></div>
+            <p id="aifs-quality" class="quality-note">Field data quality: checking clipping metadata.</p>
+          </article>
+          <article class="field-panel" data-model="ifs">
+            <div class="panel-head"><div><span class="model-index model-b">I</span><div><h3>IFS</h3><p>Integrated Forecasting System</p></div></div><span id="ifs-cell-count" class="cell-count">— CELLS</span></div>
+            <div class="canvas-wrap"><canvas id="field-ifs" role="img" aria-label="IFS precipitation field, longitude left to right and latitude north to south">Loading IFS field…</canvas><div id="field-ifs-message" class="canvas-message">Loading field…</div></div>
+            <p id="ifs-quality" class="quality-note">Field data quality: checking clipping metadata.</p>
+          </article>
+        </div>
+        <div class="map-footer"><span><i class="legend-swatch"></i> Precipitation depth (mm)</span><span>Click a grid cell to inspect its complete forecast fingerprint.</span></div>
+      </section>
+
+      <section class="fingerprint-section" aria-label="Selected point forecast fingerprint">
+        <div class="section-heading"><div><p class="eyebrow">03 / THE POINT</p><h2 id="point-heading">A full forecast, one cell at a time</h2></div><p id="point-coordinates" class="scale-note">Click either field to select a grid cell.</p></div>
+        <div id="fingerprint-message" class="fingerprint-message">Choose a grid cell above. Its four forecast steps will appear here for both models.</div>
+        <div id="chart-wrap" class="chart-wrap" hidden></div>
+        <div id="series-table-wrap" class="series-table-wrap" hidden></div>
+      </section>
+
+      <footer class="footer"><span>QUEST LAB · RESEARCH PROTOTYPE</span><span>ECMWF Open Data · precipitation depth in mm</span></footer>
+    </main>
+  </body>
+</html>
