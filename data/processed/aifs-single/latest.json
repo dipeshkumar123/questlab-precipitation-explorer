@@ -1,0 +1,7 @@
+{
+  "model": "aifs-single",
+  "sourceRunUtc": "2026-11-18T18:00:00+00:00",
+  "artifact": "processed\\aifs-single\\20261118T18Z\\tp.nc",
+  "manifest": "processed\\aifs-single\\20261118T18Z\\manifest.json",
+  "updatedAtUtc": "2026-11-19T05:09:38.858512+00:00"
+}

@@ -1,0 +1,34 @@
+{
+  "processingVersion": "0.1.0",
+  "model": "ifs",
+  "source": "ECMWF Open Data",
+  "sourceRunUtc": "2026-11-18T18:00:00+00:00",
+  "retrievedAtUtc": "2026-11-19T05:09:55.759152+00:00",
+  "stepsHours": [
+    6,
+    12,
+    18,
+    24
+  ],
+  "variables": [
+    "tp_cumulative_mm",
+    "tp_interval_mm"
+  ],
+  "sourceUnits": "m",
+  "outputUnits": "mm",
+  "grid": {
+    "shape": [
+      721,
+      1440
+    ],
+    "latitudeFirst": 90.0,
+    "latitudeLast": -90.0,
+    "longitudeFirst": -180.0,
+    "longitudeLast": 179.75,
+    "latitudeOrder": "north-to-south",
+    "longitudeConvention": "[-180, 180)"
+  },
+  "rawSha256": "f75cf9411144b400541fab425f1be57938343bef861a7f73bb8922239fde0676",
+  "artifactSha256": "ca16956ca43d20ef2085a97a3e464c7c0363d82179e147881f295b0fa7e6e11e",
+  "massBalanceMaxAbsErrorMm": 0.0
+}
