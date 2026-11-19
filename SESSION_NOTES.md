@@ -21,7 +21,7 @@
 
 - `--date latest` succeeded once and selected the same run already processed; freshness behavior will be implemented in Stage 2.
 - Pipeline currently defaults to a four-step, 24-hour horizon. Longer IFS horizons may not provide every 6-hour step; missing-step handling is explicit but those horizons were not verified.
-- No back end, front end, deployment, or Stage 4 failure-mode test has started.
+- At Stage 1 signoff, no back end, front end, deployment, or Stage 4 failure-mode test had started.
 - Session rollout path is still to be added to README during handover.
 
 ## Stage 2.0 in progress (2026-11-19)
@@ -35,4 +35,20 @@
 
 ## Next
 
-Finish the Stage 2.0 commit with the packing, clipping, payload, timing, and longitude decisions. Then record the backend framework choice and implement/test the read-only API against the Stage 1 NetCDF artifacts. Do not start Stage 3 until the Stage 2 report is delivered.
+## Stage 2 backend in progress (2026-11-19)
+
+- Stage 2.0 data decisions committed as `6815c3c15a75dbdb7cf2bfc1227d0d1831462baa`.
+- Chose synchronous FastAPI handlers over Flask/async: local NetCDF snapshots, bounded slicing, schema validation/OpenAPI, and no asynchronous upstream work. Artifacts load read-only from `latest.json` at startup.
+- Implemented `/api/v1/health`, `/api/v1/point`, and `/api/v1/field` with common JSON errors, 12-hour stale metadata, clipping flags, 20°×30°/10,000-cell/1 MiB bounds, and the verified longitude order.
+- `scripts/test_api.py` against a running uvicorn instance passed endpoint shape, unit, coordinate, clipping, invalid request, missing-step, and payload assertions. Separate real servers with an empty data root and a 36-hour-old manifest both behaved as specified; failure outcomes still need to be written into the failure table before the failure-mode commit.
+- Initial HTTP timings: health 0.0060 s; first/second point request 0.0044/0.0038 s; max-size region 0.0072 s and 54,271 bytes (9,801 cells). These are loopback measurements on the current Windows host.
+
+## Known issues
+
+- The actual HTTP response has now confirmed the longitude/axis convention from NetCDF; record the exact response check in the contract reconciliation entry.
+- API service currently snapshots latest artifacts at startup; restart it after new pipeline output.
+- Front end and deployment remain unstarted. Do not begin Stage 3 before reporting Stage 2.
+
+## Next
+
+Commit the endpoint implementation and client test, record observed failure modes, then add measured endpoint latencies and reconcile DECISIONS.md with the live implementation. Stop before Stage 3.

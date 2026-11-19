@@ -15,10 +15,14 @@ dependencies = [
   "matplotlib",
   "h5netcdf",
   "h5py",
+  "fastapi",
+  "uvicorn",
+  "requests",
 ]
 
 [project.scripts]
 questlab-ingest = "questlab.pipeline:main"
+questlab-api = "questlab.api:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

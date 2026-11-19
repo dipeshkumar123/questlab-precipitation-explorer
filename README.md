@@ -1,6 +1,6 @@
 # QUEST precipitation explorer
 
-An end-to-end precipitation forecast data pipeline for ECMWF AIFS Single and IFS. The current Stage 1 deliverable retrieves real global forecasts, converts cumulative `tp` into 6-hour interval totals, and writes a compressed NetCDF artefact plus a manifest. The back end and front end have not been started yet.
+An end-to-end precipitation forecast pipeline and read-only API for ECMWF AIFS Single and IFS. The pipeline retrieves global forecasts, converts cumulative `tp` into 6-hour interval totals, and writes a compressed NetCDF artefact plus a manifest. The API serves point series, bounded regional fields, and forecast freshness. The frontend and deployment have not been started yet.
 
 ## Verified data behavior
 
@@ -43,6 +43,34 @@ For an existing explicit run with a matching manifest and checksum, reruns skip 
 
 The raw GRIB is stored at `data/raw/<model>/<run>/tp-through-<max-step>h.grib2`. Processed output is stored at `data/processed/<model>/<run>/tp.nc` with `manifest.json`; `data/processed/<model>/latest.json` points to the last successful product. Both `tp_cumulative_mm` and `tp_interval_mm` use dimensions `[step_hours, latitude, longitude]`. cfgrib indexes live separately under `data/cache/cfgrib/<model>/<run>/<raw-file-stem>/` to avoid incompatible sibling indexes.
 
+## Run the API
+
+After installing the project, start the read-only API from the repository root:
+
+```powershell
+questlab-api
+```
+
+The default address is `http://127.0.0.1:8000`. Set `QUEST_API_HOST`, `QUEST_API_PORT`, or `QUEST_DATA_DIR` before starting to change the bind address, port, or artifact root. The service reads `latest.json`, its manifest, and NetCDF files at startup; rerun the service after a new ingest. It does not fetch ECMWF data or regenerate processed artifacts.
+
+The v1 endpoints are:
+
+- `GET /api/v1/health` — per-model run time, retrieval time, steps, processing version, age, stale flag, and load/ingest status.
+- `GET /api/v1/point?lat=12.97&lon=77.59&model=all` — nearest-cell interval and cumulative series in mm.
+- `GET /api/v1/field?model=aifs-single&stepHours=24&kind=interval&bbox=70,0,100,20&stride=1` — one bounded JSON grid with coordinate axes.
+
+The API serves only each model's latest pointer. A stale forecast remains available and every point/field response includes `stale` and `ageSeconds`. If no valid artifacts exist, the service returns a consistent JSON 503 error. Negative interval values are clipped to zero at the API boundary with clipping counts and flags; stored NetCDF values remain signed so they conserve the cumulative forecast. Region requests are limited to 20° latitude × 30° longitude, 10,000 cells, one model and step, and 1 MiB JSON response size. Longitude uses `[-180,180)`; axes are returned in `[latitude,longitude]` order with latitude north-to-south.
+
+## Verify the API
+
+With `questlab-api` running in another terminal:
+
+```powershell
+python scripts/test_api.py --failure-scenarios
+```
+
+The client checks health, point, maximum-size region, coordinate conventions, clipping metadata, errors, and runs separate real uvicorn instances for no-artifact and stale-manifest scenarios. API response latency measurements are written to `artifacts/api-latency-stage2.json`.
+
 ## Inspect the forecast field
 
 After running a pipeline command for the pinned four-step AIFS run:
@@ -57,5 +85,5 @@ This writes `artifacts/field-inspection-aifs-single-2026-11-18-t18-step24.png`, 
 
 - [DECISIONS.md](DECISIONS.md) records parameter semantics, measured retrieval/index behavior, the data-inspection findings, pipeline trade-offs, and the API contract prepared before endpoint work.
 - [SESSION_NOTES.md](SESSION_NOTES.md) records verified work, known limitations, and the next stage.
-- Deployment URL: none yet. Backend and frontend stages remain.
+- Deployment URL: none yet. Frontend and deployment stages remain.
 - Session log: record the raw Codex rollout path here at handover. Rollouts are stored under `C:\Users\panji\.codex\sessions\YYYY\MM\DD\rollout-*.jsonl`.
