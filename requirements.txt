@@ -3,3 +3,5 @@ xarray
 cfgrib
 matplotlib
 numpy
+h5netcdf
+h5py

@@ -1,29 +1,61 @@
 # QUEST precipitation explorer
 
-Early-stage project for exploring ECMWF Open Data precipitation forecasts.
+An end-to-end precipitation forecast data pipeline for ECMWF AIFS Single and IFS. The current Stage 1 deliverable retrieves real global forecasts, converts cumulative `tp` into 6-hour interval totals, and writes a compressed NetCDF artefact plus a manifest. The back end and front end have not been started yet.
 
-## Stage 0 status
+## Verified data behavior
 
-The initial probe uses AIFS deterministic forecasts and total precipitation (`tp`). See [scripts/probe_ecmwf.py](scripts/probe_ecmwf.py) for the exact request. Verified run: `2026-11-18 18:00 UTC`, step 6, field shape `(721, 1440)`, global 0.25° grid, GRIB units `kg m**-2`, values 0–79.875 (mean 0.6158). The parameter database documents `tp` in metres, while this forecast GRIB encodes it as mass per area, numerically equivalent to millimetres of water depth. `tp` is accumulated precipitation; its period semantics need confirmation before converting forecast steps into interval amounts. ECMWF open data is retained for only a limited recent window, so the final app will report the forecast initialization time and freshness.
+- Parameter: ECMWF total precipitation, `tp` (parameter 228).
+- Verified run: `2026-11-18 18:00 UTC`, steps 6, 12, 18, and 24, for both AIFS Single and IFS.
+- Both products encode steps as cumulative from forecast initialization (`stepRange=0-6`, `0-12`, `0-18`, `0-24`). The pipeline differences consecutive steps.
+- AIFS GRIB units are `kg m**-2`; IFS uses `m`. Output fields use millimetres of water depth.
+- Source grid: 721×1440 at 0.25°, latitude ordered north-to-south, longitude −180° to 179.75°.
+- ECMWF Open Data retains only recent runs (up to four days per the project brief). Raw GRIB and processed output are kept locally in ignored `data/` paths; no cloud archive or deployment exists yet.
 
 ## Setup
 
-Python 3.11 or newer is recommended. Create an environment and install dependencies:
+Python 3.11 or newer is recommended. From the repository root:
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
 
-## Probe
+The pipeline uses `ecmwf-opendata`, `cfgrib`/ecCodes, xarray, h5netcdf/h5py, and NumPy. The inspection script also uses Matplotlib.
+
+## Run the data pipeline
+
+Retrieve and process one model/run through 24 hours (steps 6, 12, 18, 24):
 
 ```powershell
-python scripts/probe_ecmwf.py
+questlab-ingest --model aifs-single --date 2026-11-18 --time 18 --max-step 24
+questlab-ingest --model ifs --date 2026-11-18 --time 18 --max-step 24
 ```
 
-The probe downloads a real ECMWF field and requires network access. Output is written under `data/raw/`.
+To resolve ECMWF's latest matching run, use `--date latest` and omit `--time`:
 
-## Session log
+```powershell
+questlab-ingest --model aifs-single --date latest --max-step 24
+```
 
-Codex rollout: to be recorded at handover. Expected location: `C:\Users\panji\.codex\sessions\YYYY\MM\DD\rollout-*.jsonl`.
+For an existing explicit run with a matching manifest and checksum, reruns skip the work. Pass `--force` to reprocess its cached GRIB. Retrieval needs network access; ECMWF failures return a nonzero exit code. The source client is configured for three retries with a 3-second backoff.
+
+The raw GRIB is stored at `data/raw/<model>/<run>/tp-through-<max-step>h.grib2`. Processed output is stored at `data/processed/<model>/<run>/tp.nc` with `manifest.json`; `data/processed/<model>/latest.json` points to the last successful product. Both `tp_cumulative_mm` and `tp_interval_mm` use dimensions `[step_hours, latitude, longitude]`. cfgrib indexes live separately under `data/cache/cfgrib/<model>/<run>/<raw-file-stem>/` to avoid incompatible sibling indexes.
+
+## Inspect the forecast field
+
+After running a pipeline command for the pinned four-step AIFS run:
+
+```powershell
+python scripts/inspect_field.py --model aifs-single --run-date 2026-11-18 --time 18 --step 24
+```
+
+This writes `artifacts/field-inspection-aifs-single-2026-11-18-t18-step24.png`, showing step-24 cumulative precipitation beside the step-18-to-24 increment on a shared logarithmic scale. It prints the global maximum and five spatially separated local maxima. The image is committed as the data-inspection evidence; its source GRIB remains local.
+
+## Decisions and current state
+
+- [DECISIONS.md](DECISIONS.md) records parameter semantics, measured retrieval/index behavior, the data-inspection findings, pipeline trade-offs, and the API contract prepared before endpoint work.
+- [SESSION_NOTES.md](SESSION_NOTES.md) records verified work, known limitations, and the next stage.
+- Deployment URL: none yet. Backend and frontend stages remain.
+- Session log: record the raw Codex rollout path here at handover. Rollouts are stored under `C:\Users\panji\.codex\sessions\YYYY\MM\DD\rollout-*.jsonl`.

@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quest-precipitation-explorer"
+version = "0.1.0"
+description = "ECMWF precipitation forecast ingest and exploration pipeline"
+requires-python = ">=3.11"
+dependencies = [
+  "ecmwf-opendata",
+  "xarray",
+  "cfgrib",
+  "numpy",
+  "matplotlib",
+  "h5netcdf",
+  "h5py",
+]
+
+[project.scripts]
+questlab-ingest = "questlab.pipeline:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
