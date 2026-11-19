@@ -71,6 +71,24 @@ python scripts/test_api.py --failure-scenarios
 
 The client checks health, point, maximum-size region, coordinate conventions, clipping metadata, errors, and runs separate real uvicorn instances for no-artifact and stale-manifest scenarios. API response latency measurements are written to `artifacts/api-latency-stage2.json`.
 
+## Build and run the front end
+
+The front end is dependency-free static HTML, CSS, and JavaScript. With the API running on port 8000, build it with:
+
+```powershell
+python scripts/build_frontend.py
+```
+
+Preview the built files with:
+
+```powershell
+python -m http.server 5173 --directory dist
+```
+
+Open `http://127.0.0.1:5173/`. The build writes `dist/index.html`, `dist/styles.css`, `dist/app.js`, and a generated `dist/config.js`. The default `QUEST_API_BASE_URL` is `http://127.0.0.1:8000`; set that environment variable before running the same build command to target another API host. For a deployed static host, build with `QUEST_API_BASE_URL` empty and configure a **same-origin reverse proxy** to forward `/api/*` to FastAPI. This avoids a cross-origin request; if a separate API origin is chosen instead, explicitly allow the static site's exact origin in FastAPI's `QUEST_CORS_ORIGINS` setting.
+
+The interface shows two regional fields bounded to 20°×30° and compares them on one logarithmic scale. Click a grid cell to see its full point forecast sequence across both models. Change the region center or forecast step and select cumulative total or six-hour increment. The header shows source initialization, selected valid time, forecast age and stale state. Interval fields show the API's clipped-cell count. Requests use API latitude/longitude axes as returned; a global map is out of scope under the 10,000-cell/1 MiB response bound.
+
 ## Inspect the forecast field
 
 After running a pipeline command for the pinned four-step AIFS run:
@@ -85,5 +103,5 @@ This writes `artifacts/field-inspection-aifs-single-2026-11-18-t18-step24.png`, 
 
 - [DECISIONS.md](DECISIONS.md) records parameter semantics, measured retrieval/index behavior, the data-inspection findings, pipeline trade-offs, and the API contract prepared before endpoint work.
 - [SESSION_NOTES.md](SESSION_NOTES.md) records verified work, known limitations, and the next stage.
-- Deployment URL: none yet. Frontend and deployment stages remain.
+- Deployment URL: none yet. Front end is complete; deployment (Stage 4) remains.
 - Session log: record the raw Codex rollout path here at handover. Rollouts are stored under `C:\Users\panji\.codex\sessions\YYYY\MM\DD\rollout-*.jsonl`.
