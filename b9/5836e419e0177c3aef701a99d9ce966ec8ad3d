@@ -1,0 +1,74 @@
+DECISIONS.md
+  s_72d32dcc9ba14d::t_9e004da9516fe3 10-30
+scripts/probe_accumulation.py
+  s_72d32dcc9ba14d::t_fc059f3460290b 6,100-102,105-107
+  s_72d32dcc9ba14d::t_3336622ac7d796 44,48-53,91-94
+  s_72d32dcc9ba14d::t_fcb881dccb735c 1-5,7-36,38-43,45-47,54-61,63-64,67-90,95-99,103-104,110-118
+  s_72d32dcc9ba14d::t_bc1dff3a30efd4 37,62,65-66,108-109
+SESSION_NOTES.md
+  s_72d32dcc9ba14d::t_fa6bbde48b8bb6 5-8,12-14,18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "autter_version": "2.2.1",
+  "base_commit_sha": "b95836e419e0177c3aef701a99d9ce966ec8ad3d",
+  "branch": "master",
+  "prompts": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:6b0c57c5492973d35ea7c0b48f209f39bc9cb824f6802d4c536245c1c5029951",
+      "total_additions": 332,
+      "total_deletions": 48,
+      "accepted_lines": 302,
+      "overriden_lines": 0
+    }
+  },
+  "sessions": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:6b0c57c5492973d35ea7c0b48f209f39bc9cb824f6802d4c536245c1c5029951",
+      "stats": {
+        "total_additions": 332,
+        "total_deletions": 48,
+        "accepted_lines": 302,
+        "overriden_lines": 0,
+        "files": {
+          "DECISIONS.md": {
+            "total_additions": 21,
+            "total_deletions": 0,
+            "accepted_lines": 21,
+            "overriden_lines": 0
+          },
+          "SESSION_NOTES.md": {
+            "total_additions": 18,
+            "total_deletions": 18,
+            "accepted_lines": 18,
+            "overriden_lines": 0
+          },
+          "data/raw/accumulation-report-2026-11-18-t18.json": {
+            "total_additions": 168,
+            "total_deletions": 23,
+            "accepted_lines": 145,
+            "overriden_lines": 0
+          },
+          "scripts/probe_accumulation.py": {
+            "total_additions": 125,
+            "total_deletions": 7,
+            "accepted_lines": 118,
+            "overriden_lines": 0
+          }
+        }
+      }
+    }
+  }
+}
