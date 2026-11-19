@@ -334,11 +334,50 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     parser.add_argument("--force", action="store_true", help="reprocess an existing run from its cached GRIB")
     args = parser.parse_args(argv)
+    data_dir = args.data_dir.resolve()
+    status_path = data_dir / "processed" / args.model / "ingest-status.json"
+    attempted_at = datetime.now(timezone.utc)
+    _atomic_json(
+        status_path,
+        {
+            "model": args.model,
+            "attemptedAtUtc": attempted_at.isoformat(),
+            "lastIngestSucceeded": False,
+            "state": "running",
+        },
+    )
     try:
-        artifact = run_pipeline(args.model, args.date, args.time, args.max_step, args.data_dir.resolve(), args.force)
+        artifact = run_pipeline(args.model, args.date, args.time, args.max_step, data_dir, args.force)
     except Exception as exc:
+        _atomic_json(
+            status_path,
+            {
+                "model": args.model,
+                "attemptedAtUtc": attempted_at.isoformat(),
+                "completedAtUtc": datetime.now(timezone.utc).isoformat(),
+                "lastIngestSucceeded": False,
+                "state": "failed",
+                "lastErrorCode": "ingest_failed",
+                "lastErrorMessage": "The latest ingest attempt failed; a previously validated forecast, if present, remains available.",
+                "errorType": type(exc).__name__,
+            },
+        )
         print(f"ingest failed: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1
+    manifest_path = artifact.parent / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    _atomic_json(
+        status_path,
+        {
+            "model": args.model,
+            "attemptedAtUtc": attempted_at.isoformat(),
+            "completedAtUtc": datetime.now(timezone.utc).isoformat(),
+            "lastIngestSucceeded": True,
+            "state": "succeeded",
+            "sourceRunUtc": manifest["sourceRunUtc"],
+            "artifact": str(artifact.relative_to(data_dir)),
+        },
+    )
     print(f"artifact={artifact}")
     return 0
 

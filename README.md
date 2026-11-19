@@ -41,7 +41,7 @@ questlab-ingest --model aifs-single --date latest --max-step 24
 
 For an existing explicit run with a matching manifest and checksum, reruns skip the work. Pass `--force` to reprocess its cached GRIB. Retrieval needs network access; ECMWF failures return a nonzero exit code. The source client is configured for three retries with a 3-second backoff.
 
-The raw GRIB is stored at `data/raw/<model>/<run>/tp-through-<max-step>h.grib2`. Processed output is stored at `data/processed/<model>/<run>/tp.nc` with `manifest.json`; `data/processed/<model>/latest.json` points to the last successful product. Both `tp_cumulative_mm` and `tp_interval_mm` use dimensions `[step_hours, latitude, longitude]`. cfgrib indexes live separately under `data/cache/cfgrib/<model>/<run>/<raw-file-stem>/` to avoid incompatible sibling indexes.
+The raw GRIB is stored at `data/raw/<model>/<run>/tp-through-<max-step>h.grib2`. Processed output is stored at `data/processed/<model>/<run>/tp.nc` with `manifest.json`; `data/processed/<model>/latest.json` points to the last successful product. Each ingest attempt atomically updates `data/processed/<model>/ingest-status.json`, so a failed new attempt is visible while the API continues serving the prior verified artifact. Both `tp_cumulative_mm` and `tp_interval_mm` use dimensions `[step_hours, latitude, longitude]`. cfgrib indexes live separately under `data/cache/cfgrib/<model>/<run>/<raw-file-stem>/` to avoid incompatible sibling indexes.
 
 ## Run the API
 
@@ -59,7 +59,7 @@ The v1 endpoints are:
 - `GET /api/v1/point?lat=12.97&lon=77.59&model=all` — nearest-cell interval and cumulative series in mm.
 - `GET /api/v1/field?model=aifs-single&stepHours=24&kind=interval&bbox=70,0,100,20&stride=1` — one bounded JSON grid with coordinate axes.
 
-The API serves only each model's latest pointer. A stale forecast remains available and every point/field response includes `stale` and `ageSeconds`. If no valid artifacts exist, the service returns a consistent JSON 503 error. Negative interval values are clipped to zero at the API boundary with clipping counts and flags; stored NetCDF values remain signed so they conserve the cumulative forecast. Region requests are limited to 20° latitude × 30° longitude, 10,000 cells, one model and step, and 1 MiB JSON response size. Longitude uses `[-180,180)`; axes are returned in `[latitude,longitude]` order with latitude north-to-south.
+The API serves only each model's latest pointer. Health reports the latest ingest attempt time, success flag, and a safe error summary; point and field responses carry the success flag and attempt time. A stale forecast remains available and every point/field response includes `stale` and `ageSeconds`. If no valid artifacts exist, the service returns a consistent JSON 503 error. Negative interval values are clipped to zero at the API boundary with clipping counts and flags; stored NetCDF values remain signed so they conserve the cumulative forecast. Region requests are limited to 20° latitude × 30° longitude, 10,000 cells, one model and step, and 1 MiB JSON response size. Longitude uses `[-180,180)`; axes are returned in `[latitude,longitude]` order with latitude north-to-south.
 
 ## Verify the API
 

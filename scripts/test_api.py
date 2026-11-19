@@ -201,7 +201,7 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def make_fixture(root: Path, stale: bool) -> None:
+def make_fixture(root: Path, stale: bool, failed_ingest: bool = False) -> None:
     source_root = ROOT / "data"
     for model in MODELS:
         source_model = source_root / "processed" / model
@@ -235,6 +235,11 @@ def make_fixture(root: Path, stale: bool) -> None:
             pointer["updatedAtUtc"] = retrieved_at.isoformat()
             manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
             pointer_path.write_text(json.dumps(pointer, indent=2) + "\n", encoding="utf-8")
+        if failed_ingest:
+            (target_model / "ingest-status.json").write_text(
+                json.dumps({"model": model, "attemptedAtUtc": "2026-11-19T08:00:00+00:00", "lastIngestSucceeded": False, "state": "failed", "lastErrorMessage": "private detail"}) + "\n",
+                encoding="utf-8",
+            )
 
 
 def np_datetime64(value: datetime):
@@ -283,6 +288,23 @@ def test_failure_scenarios() -> None:
                 f"stale manifest: health stale=true age={health_model['ageSeconds']}s; "
                 "point and field still return 200 with stale=true and ageSeconds"
             )
+
+    with tempfile.TemporaryDirectory(prefix="quest-api-failed-ingest-") as failed_dir:
+        fixture = Path(failed_dir)
+        make_fixture(fixture, stale=False, failed_ingest=True)
+        with running_server(fixture) as base_url:
+            health = requests.get(f"{base_url}/api/v1/health", timeout=15)
+            assert health.status_code == 200, health.text
+            state = health.json()["models"]["aifs-single"]
+            assert state["available"] is True and state["lastIngestSucceeded"] is False
+            assert state["lastIngestAttemptedAtUtc"] == "2026-11-19T08:00:00Z"
+            assert state["lastError"]["code"] == "ingest_failed"
+            assert "private detail" not in health.text
+            point = requests.get(f"{base_url}/api/v1/point", params={"lat": 12, "lon": 77, "model": "aifs-single"}, timeout=15)
+            assert point.status_code == 200 and point.json()["models"]["aifs-single"]["lastIngestSucceeded"] is False
+            field = requests.get(f"{base_url}/api/v1/field", params={"model": "aifs-single", "stepHours": 24, "kind": "interval", "bbox": "70,0,80,10"}, timeout=15)
+            assert field.status_code == 200 and field.json()["lastIngestSucceeded"] is False
+            print("failed latest ingest: health reports failure and safe error; prior verified point/field remain available")
 
 
 def main() -> None:

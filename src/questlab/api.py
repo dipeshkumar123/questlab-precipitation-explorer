@@ -60,6 +60,9 @@ class Forecast:
     longitude: np.ndarray
     cumulative_mm: np.ndarray
     interval_mm: np.ndarray
+    last_ingest_succeeded: bool
+    last_ingest_attempted_at: datetime | None
+    last_error: dict[str, str] | None
 
     def age_seconds(self, now: datetime) -> int:
         return max(0, int((now - self.source_run).total_seconds()))
@@ -104,6 +107,22 @@ class ForecastStore:
                 raise ValueError("processed NetCDF checksum does not match the manifest")
             source_run = _parse_utc(manifest["sourceRunUtc"])
             retrieved_at = _parse_utc(manifest["retrievedAtUtc"])
+            ingest_status_path = pointer_path.parent / "ingest-status.json"
+            last_ingest_succeeded = True  # Legacy validated artifacts predate this status file.
+            last_ingest_attempted_at = None
+            last_error = None
+            if ingest_status_path.is_file():
+                try:
+                    ingest_status = json.loads(ingest_status_path.read_text(encoding="utf-8"))
+                    last_ingest_succeeded = ingest_status.get("lastIngestSucceeded") is True
+                    attempted = ingest_status.get("attemptedAtUtc")
+                    if attempted:
+                        last_ingest_attempted_at = _parse_utc(attempted)
+                    if not last_ingest_succeeded:
+                        last_error = {"code": "ingest_failed", "message": "Latest ingest attempt failed; serving previous verified forecast."}
+                except Exception:
+                    last_ingest_succeeded = False
+                    last_error = {"code": "ingest_status_invalid", "message": "Latest ingest status is unreadable; serving previous verified forecast."}
             expected_steps = [int(step) for step in manifest["stepsHours"]]
             with xr.open_dataset(artifact_path, engine="h5netcdf") as dataset:
                 required_vars = ("tp_cumulative_mm", "tp_interval_mm")
@@ -138,8 +157,11 @@ class ForecastStore:
                 longitude=longitude,
                 cumulative_mm=cumulative,
                 interval_mm=interval,
+                last_ingest_succeeded=last_ingest_succeeded,
+                last_ingest_attempted_at=last_ingest_attempted_at,
+                last_error=last_error,
             )
-            self.model_states[model] = {"available": True, "lastIngestSucceeded": True}
+            self.model_states[model] = {"available": True, "lastIngestSucceeded": last_ingest_succeeded}
         except Exception as exc:
             LOGGER.error("Could not load latest %s forecast (%s): %s", model, type(exc).__name__, exc)
             self.model_states[model] = {"available": False, "lastIngestSucceeded": False, "errorCode": "artifact_invalid"}
@@ -168,6 +190,8 @@ def _freshness(forecast: Forecast, now: datetime) -> dict[str, Any]:
         "retrievedAtUtc": _iso_utc(forecast.retrieved_at),
         "ageSeconds": forecast.age_seconds(now),
         "stale": forecast.stale(now),
+        "lastIngestSucceeded": forecast.last_ingest_succeeded,
+        "lastIngestAttemptedAtUtc": _iso_utc(forecast.last_ingest_attempted_at) if forecast.last_ingest_attempted_at else None,
     }
 
 
@@ -250,7 +274,7 @@ def health(request: Request) -> Response:
             **_freshness(forecast, now),
             "stepsHours": forecast.steps.astype(int).tolist(),
             "processingVersion": forecast.processing_version,
-            "lastIngestSucceeded": True,
+            "lastError": forecast.last_error,
         }
     available = bool(store.forecasts)
     payload = {"available": available, "models": models}
@@ -379,6 +403,8 @@ def region_field(
         "validTimeUtc": _iso_utc(forecast.source_run + timedelta(hours=step_hours)),
         "ageSeconds": forecast.age_seconds(now),
         "stale": forecast.stale(now),
+        "lastIngestSucceeded": forecast.last_ingest_succeeded,
+        "lastIngestAttemptedAtUtc": _iso_utc(forecast.last_ingest_attempted_at) if forecast.last_ingest_attempted_at else None,
         "units": "mm",
         "negativeIntervalPolicy": "clip-to-zero" if kind == "interval" else "not-applicable",
         "negativeIntervalsClipped": clipped_count > 0,
