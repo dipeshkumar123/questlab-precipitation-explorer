@@ -116,3 +116,9 @@ Report Stage 3. Do not begin Stage 4 (deployment) until user review.
 - India UI window `bbox=62.5,3,92.5,23` (west,south,east,north), 81×121: AIFS 11, IFS 678. This matches the deployed UI counts.
 - Stage 3 southern-Pacific window `bbox=-170,-22.5,-140,-2.5`, 81×121: AIFS 0, IFS 211. This matches the Stage 3 browser record.
 - No mismatch; the two count pairs describe different regions and should not be compared as if they were the same query.
+
+## Stage 5.5.3 — Deployed outage limitation recorded (2026-11-19)
+
+- Local Docker stop-only-Uvicorn check left nginx `/` at 200 and made the proxied API health route return 502; the earlier local static preview displayed its API-unavailable message during an API outage.
+- Render Free runs nginx and Uvicorn inside one service/container. Render cannot stop only Uvicorn while leaving nginx in that container running, so API-only failure UI behavior on Render remains inferred from local evidence, not directly observed.
+- Did not restart/pause the deployed service as a proxy test: that would stop the complete container and test host-level service downtime rather than API-only failure. No closest-equivalent result was produced or claimed.
