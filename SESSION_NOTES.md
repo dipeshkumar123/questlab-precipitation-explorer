@@ -109,3 +109,10 @@ Report Stage 3. Do not begin Stage 4 (deployment) until user review.
 - Inspected `C:\Users\panji\.codex\sessions\2026\11\19\rollout-2026-11-19T10-07-26-01a1f218-5ff0-73b3-9394-e61118a92b59.jsonl`. At 21:50 IST it was 25,394,318 bytes / 4,930 lines.
 - The raw file has four compaction event records at lines 1,518 (11:13 IST), 2,487 (12:07), 3,830 (13:01), and 4,756 (13:54). Earlier event records remain on disk before each marker, including all lines through 4,755 immediately before the latest marker; the last marker is followed by continued history. Compaction changed active model context, not the raw log's retained event history.
 - The Stage 0 one-session/no-compaction rule was violated. The rollout still records the visible turns, decisions, and tool calls/results; it does not expose private internal reasoning. Review those pre-marker ranges with this journal for the reasoning trace and state changes.
+
+## Stage 5.5.2 — Clipping counts reconciled (2026-11-19)
+
+- Queried the local `questlab-local` container against the pinned 2026-11-18 18Z data, with step 24 h and `kind=interval`.
+- India UI window `bbox=62.5,3,92.5,23` (west,south,east,north), 81×121: AIFS 11, IFS 678. This matches the deployed UI counts.
+- Stage 3 southern-Pacific window `bbox=-170,-22.5,-140,-2.5`, 81×121: AIFS 0, IFS 211. This matches the Stage 3 browser record.
+- No mismatch; the two count pairs describe different regions and should not be compared as if they were the same query.
