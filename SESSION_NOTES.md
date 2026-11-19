@@ -122,3 +122,10 @@ Report Stage 3. Do not begin Stage 4 (deployment) until user review.
 - Local Docker stop-only-Uvicorn check left nginx `/` at 200 and made the proxied API health route return 502; the earlier local static preview displayed its API-unavailable message during an API outage.
 - Render Free runs nginx and Uvicorn inside one service/container. Render cannot stop only Uvicorn while leaving nginx in that container running, so API-only failure UI behavior on Render remains inferred from local evidence, not directly observed.
 - Did not restart/pause the deployed service as a proxy test: that would stop the complete container and test host-level service downtime rather than API-only failure. No closest-equivalent result was produced or claimed.
+
+## Stage 5.5.4 — Cold and warm timing observed (2026-11-19)
+
+- Edge, public HTTPS app. Render's sleep interstitial showed incoming request 21:53:43 IST, “service waking up” 21:53:46, and startup stages through 21:54:09.
+- The QUEST app shell appeared by the 21:54:18 observation (~35 s after request), but the initial health request returned 502. The page showed API unavailable and did not automatically retry.
+- The browser health route was available by 21:55:31 (~108 s after first request). After a manual navigation home at 21:55:51, both fields and the complete point profile were populated by 21:55:58 (~7 s from that navigation; ~134 s from the cold request).
+- Wake delay was visible and the retry requirement is an observed UX limitation. These timestamps use the browser task event record and visible Render interstitial; they are coarse, not FCP/Load-event metrics. No DevTools Performance trace was saved, so exact FCP remains unmeasured and is explicitly left open. Do not call the shell timestamp FCP.
