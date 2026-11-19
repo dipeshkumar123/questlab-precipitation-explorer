@@ -64,6 +64,10 @@ def analyze(model: str) -> dict:
         "maximumGridIndex": [row, col],
         "exactValueMaxMultiplicityInTail": max(exact_counts.values()),
         "mostCommonExactTailValues": [{"valueMm": float(value), "count": int(count)} for value, count in most_common_exact],
+        "exactTailValueCounts": [
+            {"valueMm": float(value), "count": int(count)}
+            for value, count in sorted(exact_counts.items(), key=lambda item: item[0])
+        ],
         "mostOccupiedOneMmBin": max(occupied_bins, key=lambda item: item["count"]),
         "histogramOneMmBins": bins,
         "histogramTenMmSummary": coarse_histogram,

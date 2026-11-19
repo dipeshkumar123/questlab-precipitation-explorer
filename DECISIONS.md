@@ -153,12 +153,12 @@ Both products reported 0 mm mass-balance error. The latest report is `artifacts/
 
 ### 3.0.2 Exhaustive step-24 tail and maxima
 
-`scripts/analyze_divergence.py` read every decoded `tp_cumulative_mm` cell at step 24 from both NetCDFs: 1,038,240 finite grid points per model. It wrote every 1 mm bin count from 100 mm through each field maximum to `artifacts/model-tail-stage3-0.json`; this is a full histogram, not a top-N sample. In the whole ≥100 mm tail, AIFS has 200 cells and IFS 309. Maximum exact-value multiplicity in that tail is 3 for AIFS and 6 for IFS; the most occupied 1 mm bins contain 9 cells (100–101 mm, AIFS) and 12 cells (102–103 mm, IFS). The complete 10 mm count distributions are:
+`scripts/analyze_divergence.py` read every decoded `tp_cumulative_mm` cell at step 24 from both NetCDFs: 1,038,240 finite grid points per model. It wrote every 1 mm bin count from 100 mm through each field maximum, plus counts for every distinct decoded value in that tail, to `artifacts/model-tail-stage3-0.json`; this is a full exhaustive distribution, not a top-N sample. In the whole ≥100 mm tail, AIFS has 200 cells and IFS 309. Maximum exact-value multiplicity in that tail is 3 for AIFS and 6 for IFS; the most occupied 1 mm bins contain 9 cells (100–101 mm, AIFS) and 12 cells (102–103 mm, IFS). The complete 10 mm count distributions are:
 
 - AIFS, 100–250 mm bins: `55,47,29,16,14,11,6,1,2,6,4,1,3,3,2`.
 - IFS, 100–580 mm bins: `88,49,44,34,20,15,16,4,2,6,8,1,4,2,2,4,1,1,1,2,0,0,0,1,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0`.
 
-There is no single decoded value or 1 mm bin with anomalous repeated occupancy at the upper tail: peak-bin counts remain 9/1,038,240 and 12/1,038,240, and the exact-value multiplicity is at most 3/6. The AIFS unique maximum is **243.4375 mm at (−11.50°, −162.75°)**; the IFS unique maximum is **574.707031 mm at (−13.75°, −147.00°)**. They occupy different grid cells, 16 latitude rows and 63 longitude columns apart on the non-wrapping stored axis. They are different maxima, not a same-cell magnitude mismatch. This supports spatial model comparison; it does not establish which model is more accurate.
+There is no single decoded value or 1 mm bin with anomalous repeated occupancy at the upper tail: peak-bin counts remain 9/1,038,240 and 12/1,038,240, and the exact-value multiplicity is at most 3/6. The AIFS unique maximum is **243.4375 mm at (−11.50°, −162.75°)**; the IFS unique maximum is **574.707031 mm at (−13.75°, −147.00°)**. They occupy different grid cells, 9 latitude rows and 63 longitude columns apart on the non-wrapping stored axis. They are different maxima, not a same-cell magnitude mismatch. This supports spatial model comparison; it does not establish which model is more accurate.
 
 **Verdict: model divergence confirmed.**
 
@@ -179,3 +179,17 @@ Rejected alternatives:
 **Framework:** Static HTML, CSS, and JavaScript with Canvas for the bounded grids and SVG for the point fingerprint. A small Python build script copies assets and writes `config.js` from `QUEST_API_BASE_URL`; no component framework or frontend server is needed for this one-screen, no-route interaction. React/Vite was rejected because its component state and bundler provide little benefit here but add dependencies and a toolchain. Deployment target: static files in `dist/`; use a same-origin reverse proxy that forwards `/api` to FastAPI and build with an empty base URL, avoiding CORS. Local verification can use `python -m http.server 5173` and the API on port 8000, allowed by the current localhost CORS configuration.
 
 This UX and framework decision is frozen before frontend implementation; any later deviation must be explained against the measured evidence above.
+
+### Stage 3 browser verification and observed failures
+
+The static app was built into `dist/` and opened in Edge at `http://127.0.0.1:5173/`, using the running Uvicorn API and the real processed AIFS/IFS artifacts. The initial pair of field requests each returned 9,801 cells; the shared log legend showed `0.1–575 mm` and masked values below 0.1 mm. Visual inspection of the southern-Pacific region agrees with the Stage 1 global AIFS inspection image: latitude decreases from top to bottom, longitude increases left to right, the broad tropical precipitation band is in the expected location, and the palette uses the same YlGnBu-style logarithmic mapping with a 0.1 mm mask. Both field arrays use axes directly from the API, whose API client had already verified the NetCDF-to-JSON order. Clicking the field loaded the real four-step API point series for both models, with distinct interval and cumulative values at the selected cell.
+
+The interval toggle visibly reported `211 cells adjusted below zero to 0 mm` for IFS in the selected region and zero for AIFS; it did not discard the backend clipping metadata. The health card displayed the source initialization `2026-11-18 18Z`, selected valid time, age, and stale state. The current production artifact itself was already 12h 12–14m old during browser QA, so this stale case used the real artifact rather than an edited fixture.
+
+| Front-end failure scenario | Observed in browser |
+| --- | --- |
+| Uvicorn stopped | Clicking “Load region” produced `API UNAVAILABLE`, a clear connection message, and “Forecast unavailable…” overlays. No blank page, uncaught rejection, or persistent loading state. Uvicorn was restarted after this check. |
+| Stale artifact | Real latest manifests were >12 h old. The page still rendered both fields and the point profile; it showed `STALE FORECAST`, source run, age, and a stale banner. |
+| Missing step 48 | Both field panels showed “Step 48 h is not available. Available steps: 6, 12, 18, 24 h.” The page remained usable and did not crash. |
+
+Build, API URL, deployment and proxy configuration are documented in `README.md`.
