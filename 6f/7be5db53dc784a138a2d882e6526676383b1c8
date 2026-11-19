@@ -1,0 +1,108 @@
+SESSION_NOTES.md
+  s_72d32dcc9ba14d::t_aacdc4ea29f417 85-93
+scripts/normalize_latest_pointers.py
+  s_72d32dcc9ba14d::t_08af6cc2eb8b1c 1-26
+Dockerfile
+  s_72d32dcc9ba14d::t_57b715542f2fdf 6,8-9
+  s_72d32dcc9ba14d::t_08af6cc2eb8b1c 13,21
+DECISIONS.md
+  s_72d32dcc9ba14d::t_aacdc4ea29f417 219-232
+requirements-runtime.txt
+  s_72d32dcc9ba14d::t_93899eb60a8990 5
+  s_72d32dcc9ba14d::t_57b715542f2fdf 1-4,6
+deploy/supervisord.conf
+  s_72d32dcc9ba14d::t_57b715542f2fdf 9,20
+scripts/prepare_deploy.py
+  s_72d32dcc9ba14d::t_57b715542f2fdf 24
+  s_72d32dcc9ba14d::t_08af6cc2eb8b1c 31
+.dockerignore
+  s_72d32dcc9ba14d::t_08af6cc2eb8b1c 1-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "autter_version": "2.2.1",
+  "base_commit_sha": "6f7be5db53dc784a138a2d882e6526676383b1c8",
+  "branch": "master",
+  "prompts": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:a37fdad3221d35008792461e5658d408e4a9c0e41ac028b8fbc20d69054e661e",
+      "total_additions": 75,
+      "total_deletions": 3,
+      "accepted_lines": 75,
+      "overriden_lines": 0
+    }
+  },
+  "sessions": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:a37fdad3221d35008792461e5658d408e4a9c0e41ac028b8fbc20d69054e661e",
+      "stats": {
+        "total_additions": 75,
+        "total_deletions": 3,
+        "accepted_lines": 75,
+        "overriden_lines": 0,
+        "files": {
+          ".dockerignore": {
+            "total_additions": 11,
+            "total_deletions": 0,
+            "accepted_lines": 11,
+            "overriden_lines": 0
+          },
+          "DECISIONS.md": {
+            "total_additions": 14,
+            "total_deletions": 0,
+            "accepted_lines": 14,
+            "overriden_lines": 0
+          },
+          "Dockerfile": {
+            "total_additions": 5,
+            "total_deletions": 2,
+            "accepted_lines": 5,
+            "overriden_lines": 0
+          },
+          "SESSION_NOTES.md": {
+            "total_additions": 9,
+            "total_deletions": 0,
+            "accepted_lines": 9,
+            "overriden_lines": 0
+          },
+          "deploy/supervisord.conf": {
+            "total_additions": 2,
+            "total_deletions": 0,
+            "accepted_lines": 2,
+            "overriden_lines": 0
+          },
+          "requirements-runtime.txt": {
+            "total_additions": 6,
+            "total_deletions": 0,
+            "accepted_lines": 6,
+            "overriden_lines": 0
+          },
+          "scripts/normalize_latest_pointers.py": {
+            "total_additions": 26,
+            "total_deletions": 0,
+            "accepted_lines": 26,
+            "overriden_lines": 0
+          },
+          "scripts/prepare_deploy.py": {
+            "total_additions": 2,
+            "total_deletions": 1,
+            "accepted_lines": 2,
+            "overriden_lines": 0
+          }
+        }
+      }
+    }
+  }
+}
