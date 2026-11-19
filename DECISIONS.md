@@ -193,3 +193,17 @@ The interval toggle visibly reported `211 cells adjusted below zero to 0 mm` for
 | Missing step 48 | Both field panels showed “Step 48 h is not available. Available steps: 6, 12, 18, 24 h.” The page remained usable and did not crash. |
 
 Build, API URL, deployment and proxy configuration are documented in `README.md`.
+
+## 2026-11-19 — Stage 4.0 deployment topology (before packaging code)
+
+**Host:** Railway, using its authenticated local-upload CLI and a generated `*.up.railway.app` HTTPS domain. The project will use one Docker service and one Uvicorn worker; FastAPI will serve `/api/v1/*` and the built static app from the same origin. Railway's public edge supplies the hostname and TLS termination. The frontend build will use an empty `QUEST_API_BASE_URL`, so browser requests remain same-origin and need no CORS allowance.
+
+**Artifact policy:** bake the two validated processed NetCDFs, manifests, and latest pointers into the Docker image at packaging time. Do not include raw GRIBs, cfgrib cache, benchmark artifacts, or unrelated local data. No scheduler is included. A week after deployment, both models remain viewable, but the UI must say stale and show the actual age; a maintainer refreshes the forecast by running the documented ingest and redeploy/package command. ECMWF's short source-retention window means this workflow cannot promise retrieval of an old initialization later; use a new available run.
+
+**Capacity:** the two compressed NetCDFs are 6,113,692 and 5,715,190 bytes, plus small manifests/pointers (about 11.8 MB total). Railway Free documents 1 GB ephemeral storage, a 4 GB image-size limit, 0.5 GB RAM, 1 vCPU, and 0.5 GB volume. Baked artifacts use image/ephemeral storage, not a volume, and fit those published ceilings with substantial room. The API loads two arrays (~66 MB uncompressed as recorded above), which fits the memory ceiling in this data shape, though memory headroom must be observed after deployment. Free services sleep after inactivity, so first load can incur cold-start delay; the monthly $1 usage credit is not a guaranteed permanent always-on allowance. This is a public demo with no SLA.
+
+**Rejected alternatives:** Render Free has a 512 MB / 0.1 CPU service that sleeps after 15 minutes and may take about a minute to wake; it offers no persistent disk, and this environment has no Render account/CLI. A separate static host plus API host would violate the same-origin UX contract and add CORS configuration. A scheduled ingest would add a scheduler and dependency on upstream availability without being needed for this finite demo; baked artifacts preserve a reproducible snapshot and expose age honestly. Caddy/nginx is unnecessary because one FastAPI process can serve the static files and API, while Railway supplies public routing/TLS.
+
+**Configuration:** Docker build runs `python scripts/build_frontend.py`; service binds `0.0.0.0:$PORT`, with `QUEST_DATA_DIR` and `QUEST_FRESHNESS_HOURS` for artifact path and stale threshold. No secrets are needed. Deployment upload will use an isolated generated context so ignored local `data/` files are intentionally included only when selected, and raw/cached inputs cannot leak into the image.
+
+This is the selected target topology, not evidence that deployment or public URL verification has succeeded yet. Current Railway account plan/usage allowance must be checked before creating billable resources; deployment will not silently move an account onto a paid tier.
