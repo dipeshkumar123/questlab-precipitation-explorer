@@ -104,7 +104,7 @@ This writes `artifacts/field-inspection-aifs-single-2026-11-18-t18-step24.png`, 
 - [DECISIONS.md](DECISIONS.md) records parameter semantics, measured retrieval/index behavior, the data-inspection findings, pipeline trade-offs, and the API contract prepared before endpoint work.
 - [SESSION_NOTES.md](SESSION_NOTES.md) records verified work, known limitations, and the next stage.
 - Deployment topology: Railway, one Docker service for the static app and FastAPI API, with baked processed snapshots and no scheduled ingest. See Stage 4 below for live URL/status.
-- Session log: Codex rollout files are stored under `C:\Users\panji\.codex\sessions\YYYY\MM\DD\rollout-*.jsonl`; the exact session path will be recorded at handover if available, otherwise the log accompanies the submission separately.
+- Session log: `C:\Users\panji\.codex\sessions\2026\11\19\rollout-2026-11-19T10-07-26-01a1f218-5ff0-73b3-9394-e61118a92b59.jsonl`.
 
 ## Deployment
 
@@ -115,8 +115,8 @@ python scripts/prepare_deploy.py
 railway up .deploy/context --path-as-root --no-gitignore --new --name quest-lab
 ```
 
-The script copies only each model's current artifact, manifest, and pointer, and normalizes paths for Linux. The Dockerfile installs the app, builds the front end during image construction, and starts `uvicorn questlab.api:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1`. No secrets are required. Set `QUEST_FRESHNESS_HOURS` to change the stale threshold; the default is 12 hours. A manual forecast refresh requires ingesting a new available ECMWF run, preparing a new context, and redeploying.
+The script copies only each model's current artifact, manifest, and pointer, and normalizes paths for Linux. The Dockerfile installs the app, builds the front end during image construction, then starts nginx on `${PORT}` and a supervised `uvicorn questlab.api:app --host 127.0.0.1 --port 8001 --workers 1`. Nginx serves static assets and proxies `/api/*`; it remains available when the API worker stops. No secrets are required. Set `QUEST_FRESHNESS_HOURS` to change the stale threshold; the default is 12 hours. A manual forecast refresh requires ingesting a new available ECMWF run, preparing a new context, and redeploying.
 
 The forecast source is ECMWF Open Data. Its recent-run retention window is limited (the project observed/documented up to four days); this deployment has no archive mirror and cannot promise later retrieval of a specific old run. The baked snapshot ages continuously. A week after deployment, the same forecast remains viewable with a `STALE FORECAST` presentation and its actual age; no cron refreshes it. Railway Free advertises a 1 GB ephemeral filesystem, 4 GB image-size maximum, 0.5 GB RAM, 1 vCPU and 0.5 GB volume; the ~11.8 MB pair of compressed snapshots is baked into the image. Free service sleep/cold start, monthly usage credit limits, no SLA, one instance/worker, no scheduler, and the stale-by-design artifact are deployment limitations. Account plan and actual billing allowance must be confirmed before deployment; do not switch to a paid tier without an explicit decision.
 
-- Public URL: deployment pending; no public endpoint is claimed until deployed URL checks complete.
+- Public URL: none. The deployment attempt was blocked before project creation because Railway reports the account's trial has expired and requires selecting a plan. Select Railway Free ($0/month; $1 monthly resource credit) in the account dashboard, then rerun the documented commands. A paid tier was not selected. Until a public deployment exists, no first-paint measurement, second-browser verification, deployed failure test, or HTTPS/CORS result is claimed.
