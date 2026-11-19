@@ -1,0 +1,5 @@
+ecmwf-opendata
+xarray
+cfgrib
+matplotlib
+numpy
