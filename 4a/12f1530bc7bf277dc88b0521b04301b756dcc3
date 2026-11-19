@@ -1,0 +1,91 @@
+scripts/analyze_divergence.py
+  s_72d32dcc9ba14d::t_58cd9793947f87 1-100
+artifacts/ingest-latency-stage2-0.json
+  s_72d32dcc9ba14d::t_754cd51fea0548 2,7,9,12,25-26,28,32,34,37,50-51,53
+  s_72d32dcc9ba14d::t_088a9e2b744042 8,10-11,33,35-36
+artifacts/model-tail-stage3-0.json
+  s_72d32dcc9ba14d::t_dfc633fea26b96 1-3580
+SESSION_NOTES.md
+  s_72d32dcc9ba14d::t_e02e98d180df13 22,54-63
+DECISIONS.md
+  s_72d32dcc9ba14d::t_068380c8867971 98,140-179
+scripts/benchmark_ingest.py
+  s_72d32dcc9ba14d::t_60bd676b49b438 47,49-55,59-63
+  s_72d32dcc9ba14d::t_9dbc1177586b1b 46,48,64-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "autter_version": "2.2.1",
+  "base_commit_sha": "4a12f1530bc7bf277dc88b0521b04301b756dcc3",
+  "branch": "master",
+  "prompts": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:0b8802c1528e433e092cd67c79835a450c33e4f04545b0ce64ff1945bd9a7279",
+      "total_additions": 3808,
+      "total_deletions": 59,
+      "accepted_lines": 3805,
+      "overriden_lines": 0
+    }
+  },
+  "sessions": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:0b8802c1528e433e092cd67c79835a450c33e4f04545b0ce64ff1945bd9a7279",
+      "stats": {
+        "total_additions": 3808,
+        "total_deletions": 59,
+        "accepted_lines": 3805,
+        "overriden_lines": 0,
+        "files": {
+          "DECISIONS.md": {
+            "total_additions": 41,
+            "total_deletions": 1,
+            "accepted_lines": 41,
+            "overriden_lines": 0
+          },
+          "SESSION_NOTES.md": {
+            "total_additions": 11,
+            "total_deletions": 3,
+            "accepted_lines": 11,
+            "overriden_lines": 0
+          },
+          "artifacts/ingest-latency-stage2-0.json": {
+            "total_additions": 57,
+            "total_deletions": 49,
+            "accepted_lines": 56,
+            "overriden_lines": 0
+          },
+          "artifacts/model-tail-stage3-0.json": {
+            "total_additions": 3580,
+            "total_deletions": 0,
+            "accepted_lines": 3580,
+            "overriden_lines": 0
+          },
+          "scripts/analyze_divergence.py": {
+            "total_additions": 100,
+            "total_deletions": 0,
+            "accepted_lines": 100,
+            "overriden_lines": 0
+          },
+          "scripts/benchmark_ingest.py": {
+            "total_additions": 19,
+            "total_deletions": 6,
+            "accepted_lines": 17,
+            "overriden_lines": 0
+          }
+        }
+      }
+    }
+  }
+}
