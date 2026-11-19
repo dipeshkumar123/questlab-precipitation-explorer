@@ -1,6 +1,6 @@
 # QUEST precipitation explorer
 
-An end-to-end precipitation forecast pipeline and read-only API for ECMWF AIFS Single and IFS. The pipeline retrieves global forecasts, converts cumulative `tp` into 6-hour interval totals, and writes a compressed NetCDF artefact plus a manifest. The API serves point series, bounded regional fields, and forecast freshness. The frontend and deployment have not been started yet.
+An end-to-end precipitation forecast pipeline and read-only API for ECMWF AIFS Single and IFS. The pipeline retrieves global forecasts, converts cumulative `tp` into 6-hour interval totals, and writes a compressed NetCDF artefact plus a manifest. The API serves point series, bounded regional fields, and forecast freshness. The static frontend can run locally or with the API from one origin.
 
 ## Verified data behavior
 
@@ -45,13 +45,13 @@ The raw GRIB is stored at `data/raw/<model>/<run>/tp-through-<max-step>h.grib2`.
 
 ## Run the API
 
-After installing the project, start the read-only API from the repository root:
+For the full local application, build the frontend and start the API on the same origin with one command:
 
 ```powershell
-questlab-api
+python scripts/run_local.py
 ```
 
-The default address is `http://127.0.0.1:8000`. Set `QUEST_API_HOST`, `QUEST_API_PORT`, or `QUEST_DATA_DIR` before starting to change the bind address, port, or artifact root. The service reads `latest.json`, its manifest, and NetCDF files at startup; rerun the service after a new ingest. It does not fetch ECMWF data or regenerate processed artifacts.
+Open `http://127.0.0.1:8000/`. The service reads `latest.json`, its manifest, and NetCDF files at startup; rerun after a new ingest. It does not retrieve data on startup. `QUEST_DATA_DIR`, `QUEST_STATIC_DIR`, `QUEST_FRESHNESS_HOURS`, `QUEST_API_HOST`, and `PORT` configure the paths, 12-hour freshness threshold, bind address, and port. The API is one Uvicorn worker; deploy binds `0.0.0.0` and uses the host-provided `PORT`.
 
 The v1 endpoints are:
 
@@ -73,7 +73,7 @@ The client checks health, point, maximum-size region, coordinate conventions, cl
 
 ## Build and run the front end
 
-The front end is dependency-free static HTML, CSS, and JavaScript. With the API running on port 8000, build it with:
+The front end is dependency-free static HTML, CSS, and JavaScript. The Docker build runs `python scripts/build_frontend.py` with `QUEST_API_BASE_URL` empty, so the browser calls the API on the same origin. For a standalone local preview, build it with:
 
 ```powershell
 python scripts/build_frontend.py
@@ -85,7 +85,7 @@ Preview the built files with:
 python -m http.server 5173 --directory dist
 ```
 
-Open `http://127.0.0.1:5173/`. The build writes `dist/index.html`, `dist/styles.css`, `dist/app.js`, and a generated `dist/config.js`. The default `QUEST_API_BASE_URL` is `http://127.0.0.1:8000`; set that environment variable before running the same build command to target another API host. For a deployed static host, build with `QUEST_API_BASE_URL` empty and configure a **same-origin reverse proxy** to forward `/api/*` to FastAPI. This avoids a cross-origin request; if a separate API origin is chosen instead, explicitly allow the static site's exact origin in FastAPI's `QUEST_CORS_ORIGINS` setting.
+Open `http://127.0.0.1:5173/`. The build writes `dist/index.html`, `dist/styles.css`, `dist/app.js`, and generated `dist/config.js`. Set `QUEST_API_BASE_URL` before the build only when intentionally targeting a separate API origin. Production packages keep it empty and serve `/api/*` and `/` from one origin.
 
 The interface shows two regional fields bounded to 20°×30° and compares them on one logarithmic scale. Click a grid cell to see its full point forecast sequence across both models. Change the region center or forecast step and select cumulative total or six-hour increment. The header shows source initialization, selected valid time, forecast age and stale state. Interval fields show the API's clipped-cell count. Requests use API latitude/longitude axes as returned; a global map is out of scope under the 10,000-cell/1 MiB response bound.
 
@@ -103,5 +103,20 @@ This writes `artifacts/field-inspection-aifs-single-2026-11-18-t18-step24.png`, 
 
 - [DECISIONS.md](DECISIONS.md) records parameter semantics, measured retrieval/index behavior, the data-inspection findings, pipeline trade-offs, and the API contract prepared before endpoint work.
 - [SESSION_NOTES.md](SESSION_NOTES.md) records verified work, known limitations, and the next stage.
-- Deployment URL: none yet. Front end is complete; deployment (Stage 4) remains.
-- Session log: record the raw Codex rollout path here at handover. Rollouts are stored under `C:\Users\panji\.codex\sessions\YYYY\MM\DD\rollout-*.jsonl`.
+- Deployment topology: Railway, one Docker service for the static app and FastAPI API, with baked processed snapshots and no scheduled ingest. See Stage 4 below for live URL/status.
+- Session log: Codex rollout files are stored under `C:\Users\panji\.codex\sessions\YYYY\MM\DD\rollout-*.jsonl`; the exact session path will be recorded at handover if available, otherwise the log accompanies the submission separately.
+
+## Deployment
+
+The reproducible deployment uses an isolated staging context, so ignored local data does not need to be committed to Git and raw GRIB/cache files are not uploaded. After the two models have valid latest processed artifacts, run:
+
+```powershell
+python scripts/prepare_deploy.py
+railway up .deploy/context --path-as-root --no-gitignore --new --name quest-lab
+```
+
+The script copies only each model's current artifact, manifest, and pointer, and normalizes paths for Linux. The Dockerfile installs the app, builds the front end during image construction, and starts `uvicorn questlab.api:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1`. No secrets are required. Set `QUEST_FRESHNESS_HOURS` to change the stale threshold; the default is 12 hours. A manual forecast refresh requires ingesting a new available ECMWF run, preparing a new context, and redeploying.
+
+The forecast source is ECMWF Open Data. Its recent-run retention window is limited (the project observed/documented up to four days); this deployment has no archive mirror and cannot promise later retrieval of a specific old run. The baked snapshot ages continuously. A week after deployment, the same forecast remains viewable with a `STALE FORECAST` presentation and its actual age; no cron refreshes it. Railway Free advertises a 1 GB ephemeral filesystem, 4 GB image-size maximum, 0.5 GB RAM, 1 vCPU and 0.5 GB volume; the ~11.8 MB pair of compressed snapshots is baked into the image. Free service sleep/cold start, monthly usage credit limits, no SLA, one instance/worker, no scheduler, and the stale-by-design artifact are deployment limitations. Account plan and actual billing allowance must be confirmed before deployment; do not switch to a paid tier without an explicit decision.
+
+- Public URL: deployment pending; no public endpoint is claimed until deployed URL checks complete.

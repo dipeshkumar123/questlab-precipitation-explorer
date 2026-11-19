@@ -20,12 +20,13 @@ from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 LOGGER = logging.getLogger("questlab.api")
 ROOT = Path(__file__).resolve().parents[2]
 MODELS = ("aifs-single", "ifs")
-FRESHNESS_SECONDS = 12 * 60 * 60
+FRESHNESS_SECONDS = int(os.environ.get("QUEST_FRESHNESS_HOURS", "12")) * 60 * 60
 MAX_REGION_CELLS = 10_000
 MAX_RESPONSE_BYTES = 1_048_576
 MAX_POINT_STEPS = 64
@@ -420,13 +421,24 @@ def region_field(
     return _bounded_response(payload)
 
 
+# Mounted after API routes so the same Uvicorn origin serves both the interface
+# and API. The directory is configurable for container and local deployments.
+STATIC_DIR = Path(os.environ.get("QUEST_STATIC_DIR", str(ROOT / "dist")))
+if STATIC_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="frontend")
+
+
 def main() -> None:
     uvicorn.run(
         "questlab.api:app",
         host=os.environ.get("QUEST_API_HOST", "127.0.0.1"),
-        port=int(os.environ.get("QUEST_API_PORT", "8000")),
+        port=int(os.environ.get("PORT", os.environ.get("QUEST_API_PORT", "8000"))),
         log_level=os.environ.get("QUEST_API_LOG_LEVEL", "info"),
     )
+
+
+if __name__ == "__main__":
+    main()
 
 
 if __name__ == "__main__":
