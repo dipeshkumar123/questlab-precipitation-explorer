@@ -25,8 +25,10 @@ def main() -> None:
         shutil.copy2(ROOT / name, CONTEXT / name)
     copy_tree(ROOT / "src", CONTEXT / "src")
     copy_tree(ROOT / "frontend", CONTEXT / "frontend")
+    copy_tree(ROOT / "deploy", CONTEXT / "deploy")
     (CONTEXT / "scripts").mkdir()
     shutil.copy2(ROOT / "scripts" / "build_frontend.py", CONTEXT / "scripts" / "build_frontend.py")
+    shutil.copy2(ROOT / "scripts" / "container_entrypoint.sh", CONTEXT / "scripts" / "container_entrypoint.sh")
 
     processed = CONTEXT / "data" / "processed"
     for model in MODELS:

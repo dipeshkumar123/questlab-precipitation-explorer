@@ -71,3 +71,14 @@
 ## Next
 
 Report Stage 3. Do not begin Stage 4 (deployment) until user review.
+
+## Stage 4 packaging complete; public deployment blocked (2026-11-19)
+
+- Re-read `DECISIONS.md`, `SESSION_NOTES.md`, and the Stage 4 request before work. Recorded Railway topology and baked-artifact policy, then committed the decision as `fb3ce43` before deployment code.
+- Added Docker packaging, `scripts/prepare_deploy.py` for an isolated context with normalized Linux pointer paths, `scripts/run_local.py` for one-command local startup, and the Docker-time frontend build. Final context size was 11,917,772 bytes and contained the two NetCDF snapshots (11,868,882 bytes combined), manifests, pointers, and app only; raw GRIB and cache were excluded.
+- Local same-origin root, health, and point requests returned HTTP 200; missing step 48 returned HTTP 404. Health showed the real pinned 2026-11-18 18Z artifact at age ~46,060 seconds and stale=true. Frontend build and Python compileall completed. Initial packaging commit: `259e848`.
+- Reviewed Railway Free plan docs: $0/month, $1 monthly usage credits, 0.5 GB RAM, 1 GB ephemeral storage, 4 GB image limit, service sleep after 5–10 idle minutes. The account's trial has expired. `railway up .deploy/context --path-as-root --no-gitignore --new --name quest-lab --yes --detach` stopped before project creation with `Your trial has expired. Please select a plan to continue using Railway.` No plan was selected and no project/service/URL was created. A Free plan selection in the account is the remaining prerequisite; no paid tier was authorized.
+- Updated the deployment design to use nginx + one supervised Uvicorn worker in the same container so the static page remains served if the API process stops; this preserves the failure-test requirement and same origin. This new Docker container has not been built or run because the local Docker daemon is unavailable and Railway blocked deployment.
+- Topology follow-up changed the Dockerfile to run nginx and Uvicorn under supervisord, added the dynamic `${PORT}` nginx proxy config, and included those files in the isolated staging context. Local context/compile checks pass; the container runtime behavior still needs a successful Docker/Railway build.
+- Deployed URL, first paint/data render measurements, interaction checks in a second browser, deployed failure cases, and HTTPS/CORS results remain **not verified**. Stage 4.2/4.3 are not complete. No Stage 5 work started.
+- Exact Codex session rollout: `C:\Users\panji\.codex\sessions\2026\11\19\rollout-2026-11-19T10-07-26-01a1f218-5ff0-73b3-9394-e61118a92b59.jsonl`.
