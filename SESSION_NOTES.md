@@ -82,3 +82,12 @@ Report Stage 3. Do not begin Stage 4 (deployment) until user review.
 - Topology follow-up changed the Dockerfile to run nginx and Uvicorn under supervisord, added the dynamic `${PORT}` nginx proxy config, and included those files in the isolated staging context. Local context/compile checks pass; the container runtime behavior still needs a successful Docker/Railway build.
 - Deployed URL, first paint/data render measurements, interaction checks in a second browser, deployed failure cases, and HTTPS/CORS results remain **not verified**. Stage 4.2/4.3 are not complete. No Stage 5 work started.
 - Exact Codex session rollout: `C:\Users\panji\.codex\sessions\2026\11\19\rollout-2026-11-19T10-07-26-01a1f218-5ff0-73b3-9394-e61118a92b59.jsonl`.
+
+## Stage 5.0 complete; Render deployment in progress (2026-11-19)
+
+- Re-read both decision and session notes. Started installed Docker Desktop after confirming the service itself could not be controlled by this Windows account. The first `docker build -t questlab .` completed in 346.08 s at 214,892,776 bytes with the full pipeline/plot stack.
+- Self-review reduced the image to API runtime dependencies, added `h5py` after a local container test exposed its omission, normalized Windows latest-pointer paths for Linux, and configured Uvicorn as unprivileged `www-data` (UID 33). The successful final build took **223.04 s**; image size **135,315,786 bytes (129.0 MiB)**.
+- Final local container: root 200, health 200, point 200, missing step 404. With supervisor stopping only `api`, root stayed 200 and health was 502; restarting the container restored health 200. Loaded memory was ~216 MiB. The Docker container can run with all baked NetCDF data.
+- Self-review issues fixed: (1) Windows path separators in `latest.json` were not portable, so the image normalizes and validates them; (2) the image included irrelevant ingest and plotting dependencies, so `requirements-runtime.txt` trims runtime install; (3) API ran as root, so the supervised Uvicorn process now runs as `www-data`.
+- Render is selected over Koyeb and Cloady; Railway is closed. The user approved Render Google login and creation of a private GitHub repository containing app source plus only the selected processed forecast artifacts. Render billing read-only view showed no payment card and current month usage at $0; new service will be explicitly selected as Free.
+- Public deployment, URL and Stage 5.2 cross-browser/deployed verification remain outstanding.

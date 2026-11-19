@@ -21,13 +21,14 @@ def main() -> None:
     if CONTEXT.exists():
         shutil.rmtree(CONTEXT)
     CONTEXT.mkdir(parents=True)
-    for name in ("Dockerfile", "pyproject.toml", "README.md"):
+    for name in ("Dockerfile", "pyproject.toml", "requirements-runtime.txt", "README.md"):
         shutil.copy2(ROOT / name, CONTEXT / name)
     copy_tree(ROOT / "src", CONTEXT / "src")
     copy_tree(ROOT / "frontend", CONTEXT / "frontend")
     copy_tree(ROOT / "deploy", CONTEXT / "deploy")
     (CONTEXT / "scripts").mkdir()
     shutil.copy2(ROOT / "scripts" / "build_frontend.py", CONTEXT / "scripts" / "build_frontend.py")
+    shutil.copy2(ROOT / "scripts" / "normalize_latest_pointers.py", CONTEXT / "scripts" / "normalize_latest_pointers.py")
     shutil.copy2(ROOT / "scripts" / "container_entrypoint.sh", CONTEXT / "scripts" / "container_entrypoint.sh")
 
     processed = CONTEXT / "data" / "processed"

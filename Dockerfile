@@ -3,12 +3,14 @@ FROM python:3.12-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends nginx supervisor gettext-base \
     && rm -rf /var/lib/apt/lists/*
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md requirements-runtime.txt ./
 COPY src ./src
-RUN python -m pip install --no-cache-dir .
+RUN python -m pip install --no-cache-dir -r requirements-runtime.txt \
+    && python -m pip install --no-cache-dir --no-deps .
 
 COPY frontend ./frontend
 COPY scripts/build_frontend.py ./scripts/build_frontend.py
+COPY scripts/normalize_latest_pointers.py ./scripts/normalize_latest_pointers.py
 COPY deploy/nginx.conf.template ./deploy/nginx.conf.template
 COPY deploy/supervisord.conf ./deploy/supervisord.conf
 COPY scripts/container_entrypoint.sh ./scripts/container_entrypoint.sh
@@ -16,6 +18,7 @@ ENV QUEST_API_BASE_URL=
 RUN python scripts/build_frontend.py
 
 COPY data/processed ./data/processed
+RUN python scripts/normalize_latest_pointers.py /app/data/processed
 ENV QUEST_DATA_DIR=/app/data
 ENV QUEST_FRESHNESS_HOURS=12
 ENV QUEST_API_HOST=127.0.0.1

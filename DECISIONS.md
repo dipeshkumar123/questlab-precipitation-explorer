@@ -216,3 +216,17 @@ Build, API URL, deployment and proxy configuration are documented in `README.md`
 | Stale snapshot | Stage 3 real snapshot displayed `STALE FORECAST` while continuing to render. | Not verified: no public deployment. |
 | Missing step | Stage 3 step 48 displayed available steps `[6,12,18,24]` in both panels without a crash. | Not verified: no public deployment. |
 | HTTPS / CORS | Local UI/API checks were localhost; deployment HTTPS and CORS remain unobserved. | Not verified: no public deployment. |
+
+## 2026-11-19 — Stage 5.0 local container verification
+
+Docker Desktop was started from the already-installed application; the service could not be started directly because the current Windows user lacks service-control permission. `docker build -t questlab .` then succeeded in **223.04 seconds**. The final image size was **135,315,786 bytes (129.0 MiB)**. A first reduced-runtime build was smaller (129,536,574 bytes) but its container returned 503 because `h5py` was missing; `h5py` is now an explicit runtime dependency and the final build/test passed.
+
+The local container served `/` with HTTP 200, `/api/v1/health` 200, and a point-series request 200; a missing step returned 404. API-process outage check: stopping the `api` supervisor process left `/` at 200 and made `/api/v1/health` return 502 through nginx; restarting the container restored health to 200. Container memory after artifact load was about 216 MiB, below the proposed 512 MiB Render limit.
+
+### Stage 5.1 host choice and deployment path
+
+**Selected host: Render Free web service.** It accepts Docker builds from a Git repository, gives a public `onrender.com` HTTPS URL, and does not require a card on the free service. It sleeps after 15 minutes without inbound traffic and typically needs about a minute to wake; reviewer cold-start latency is an accepted limitation. The account already has a Render workspace with no card on file; the service must be explicitly created as the Free instance to avoid selecting paid compute. This project has no Git remote, so deployment will use a new private GitHub repository and only the two selected processed NetCDF artifacts, manifests, and pointers alongside source. The deployed image is self-contained after the build; the app does not fetch data from Git at runtime.
+
+**Rejected alternatives:** Koyeb Free also sleeps (after one hour) and allows one Free Instance per organization, so it offers no useful benefit for this app; Render's existing account and the requested predictable idle behavior make it simpler. Cloady remains a fallback only if Render and Koyeb fail for account reasons; it is newer and its free workspace/region availability and 7-day idle pause make it less dependable for a reviewer. Railway is abandoned: its CLI blocked before project creation due to the expired trial and requested a plan selection; do not retry Railway.
+
+Same-origin topology remains nginx static files + `/api/*` reverse proxy to one Uvicorn worker. No CORS exception is introduced. The processed snapshots are 11.9 MB total; the Docker image is about 129 MiB, and observed loaded memory was about 216 MiB, within Render Free's documented service limits. No ingest scheduler is deployed; after a week or two the real source-run age will have advanced and the UI should remain stale, not reset based on image build time.
