@@ -103,6 +103,7 @@ This writes `artifacts/field-inspection-aifs-single-2026-11-18-t18-step24.png`, 
 
 - [DECISIONS.md](DECISIONS.md) records parameter semantics, measured retrieval/index behavior, the data-inspection findings, pipeline trade-offs, and the API contract prepared before endpoint work.
 - [SESSION_NOTES.md](SESSION_NOTES.md) records verified work, known limitations, and the next stage.
+- [SUBMISSION.md](SUBMISSION.md) is the reviewer-facing submission checklist and verification map.
 - Deployment topology: one Render Free Docker service serves the static app and FastAPI API with baked processed snapshots and no scheduled ingest. The public source repository is [`dipeshkumar123/questlab-precipitation-explorer`](https://github.com/dipeshkumar123/questlab-precipitation-explorer). The live app is [questlab-precipitation-explorer.onrender.com](https://questlab-precipitation-explorer.onrender.com/).
 - Session log: `C:\Users\panji\.codex\sessions\2026\11\19\rollout-2026-11-19T10-07-26-01a1f218-5ff0-73b3-9394-e61118a92b59.jsonl`.
 
@@ -117,3 +118,7 @@ Render Free services sleep after 15 minutes without traffic and typically take a
 The previous Railway attempt was blocked before project creation because Railway required plan selection after trial expiry. It was superseded by the approved Render route. The `prepare_deploy.py` staging context remains available for hosts that need it, but the selected Render build uses repository files. The Dockerfile builds the front end and starts nginx on `${PORT}` with one supervised `uvicorn questlab.api:app --host 127.0.0.1 --port 8001 --workers 1`. Nginx serves static assets and proxies `/api/*`; it remains available when the API worker stops. No secrets are required. Set `QUEST_FRESHNESS_HOURS` to change the stale threshold; the default is 12 hours. A manual forecast refresh requires ingesting a new available ECMWF run and redeploying.
 
 - Public URL: https://questlab-precipitation-explorer.onrender.com/ (Render Free, Docker, Oregon). The free instance sleeps after inactivity, so first requests after sleep may be delayed; the deployed snapshot is a fixed run and becomes stale over time.
+
+### Session log integrity
+
+The Codex rollout file is `C:\Users\panji\.codex\sessions\2026\11\19\rollout-2026-11-19T10-07-26-01a1f218-5ff0-73b3-9394-e61118a92b59.jsonl`. At the 2026-11-19 21:50 IST inspection it was 25,394,318 bytes and 4,930 lines. It contains four `compacted` markers at lines 1,518, 2,487, 3,830, and 4,756; the latest occurred at 13:54:59 IST. The raw file retains prior message/event records before each marker, including visible decisions and tool calls/results (for example, lines 1–4,755 precede the last marker). Compaction changed the model's active context; it did not truncate the rollout log. The rollout is an activity record, not a transcript of private internal reasoning. See [DECISIONS.md](DECISIONS.md) for the dated integrity assessment.
