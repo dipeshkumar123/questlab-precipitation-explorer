@@ -1,0 +1,109 @@
+artifacts/model-tail-stage3-0.json
+  s_72d32dcc9ba14d::t_abe4bb8d425cc2 2,74,76-77,80-81,84-85,88-89,92-93,96-97,100-101,104-105,108-109,112-113,116-117,120-121,124-125,128-129,132-133,136-137,140-141,144-145,148-149,152-153,156-157,160-161,164-165,168-176,180-181,184,188,192,196-197,200,204,208-209,212-213,216,220-221,224,228-229,232-233,236-237,240-241,244-245,248-249,252,256-257,260-261,264-265,268,272-273,276,280-281,284-285,288,292-293,296-297,300,304,308,312-313,316,320-321,324,328,332,336,340-341,344,348-349,352-353,356,360-361,364-365,368-369,372-373,376-377,380-381,384-385,388-389,392,396-397,400-401,404-405,408,412-413,416-417,420-421,424-425,428-429,432-433,436,440-441,444,448-449,452,456-457,460-461,464,468-469,472,476,480-481,484,488,492-493,496-497,500-501,504-505,508-509,512,516-517,520-521,524-525,528-529,532,536-537,540-541,544-545,548-549,552-553,556-557,560-561,564-565,568,572-573,576,580-581,584-585,588-589,592,596-597,600-601,604,608-609,612-613,616-617,620-621,624,628-629,632,636-637,640-641,644-645,648,652-653,656,660-662,664-665,668-669,672-673,676-677,680-681,684-685,688-689,692,696-697,700-701,704-705,708,712-713,716-717,720-722,724-809,812-817,819-821,824-826,829-831,834-835,839-850,854-855,859-860,864-866,869-870,874-2498
+DECISIONS.md
+  s_72d32dcc9ba14d::t_b5710db317801c 182-195
+  s_72d32dcc9ba14d::t_4bbd119c9c9be4 161
+  s_72d32dcc9ba14d::t_b9a42baec09426 156
+scripts/analyze_divergence.py
+  s_72d32dcc9ba14d::t_985d97d3f74334 67-70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "autter_version": "2.2.1",
+  "base_commit_sha": "a4e467b46864259d4b576a8c8d25e7484734e32c",
+  "branch": "master",
+  "prompts": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:6db9b1a2b3f35d2a844ec0905b0be641b65a94ad35ccf4367a59cb49fff157c1",
+      "total_additions": 2567,
+      "total_deletions": 498,
+      "accepted_lines": 5654,
+      "overriden_lines": 0
+    }
+  },
+  "sessions": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:6db9b1a2b3f35d2a844ec0905b0be641b65a94ad35ccf4367a59cb49fff157c1",
+      "stats": {
+        "total_additions": 2567,
+        "total_deletions": 498,
+        "accepted_lines": 5654,
+        "overriden_lines": 0,
+        "files": {
+          ".gitignore": {
+            "total_additions": 2,
+            "total_deletions": 0,
+            "accepted_lines": 2,
+            "overriden_lines": 0
+          },
+          "DECISIONS.md": {
+            "total_additions": 16,
+            "total_deletions": 2,
+            "accepted_lines": 16,
+            "overriden_lines": 0
+          },
+          "README.md": {
+            "total_additions": 20,
+            "total_deletions": 2,
+            "accepted_lines": 19,
+            "overriden_lines": 0
+          },
+          "SESSION_NOTES.md": {
+            "total_additions": 12,
+            "total_deletions": 2,
+            "accepted_lines": 12,
+            "overriden_lines": 0
+          },
+          "artifacts/model-tail-stage3-0.json": {
+            "total_additions": 2037,
+            "total_deletions": 485,
+            "accepted_lines": 5132,
+            "overriden_lines": 0
+          },
+          "frontend/app.js": {
+            "total_additions": 362,
+            "total_deletions": 2,
+            "accepted_lines": 360,
+            "overriden_lines": 0
+          },
+          "frontend/index.html": {
+            "total_additions": 78,
+            "total_deletions": 2,
+            "accepted_lines": 76,
+            "overriden_lines": 0
+          },
+          "frontend/styles.css": {
+            "total_additions": 7,
+            "total_deletions": 3,
+            "accepted_lines": 4,
+            "overriden_lines": 0
+          },
+          "scripts/analyze_divergence.py": {
+            "total_additions": 4,
+            "total_deletions": 0,
+            "accepted_lines": 4,
+            "overriden_lines": 0
+          },
+          "scripts/build_frontend.py": {
+            "total_additions": 29,
+            "total_deletions": 0,
+            "accepted_lines": 29,
+            "overriden_lines": 0
+          }
+        }
+      }
+    }
+  }
+}
