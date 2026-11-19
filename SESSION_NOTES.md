@@ -24,31 +24,32 @@
 - At Stage 1 signoff, no back end, front end, deployment, or Stage 4 failure-mode test had started.
 - Session rollout path is still to be added to README during handover.
 
-## Stage 2.0 in progress (2026-11-19)
+## Stage 2.0 complete (2026-11-19)
 
 - Re-read DECISIONS.md and these notes before beginning Stage 2.
 - ecCodes packing probe: `grib_get` CLI is absent on Windows; `scripts/probe_packing.py` reads the same message keys through the installed ecCodes library. Every AIFS and IFS message has 12-bit `grid_ccsds`; none of 8.3 million model-step values is at or within one quantization increment of its theoretical ceiling. AIFS has one step-24 maximum at 243.4375 mm, 12.5 mm below ceiling; IFS has one value >500 mm and no value at its 999.75586 mm step-24 ceiling. The tail difference is not clipping and is recorded as model-output divergence.
 - API negative interval decision: clip negative interval values to zero at the API boundary and report clipping counts/flags. Preserve raw signed interval fields and cumulative fields in NetCDF; the public contract warns that clipped interval totals may not telescope exactly.
 - Bounded region contract: one model, step, and field; max 20° latitude ×30° longitude, 81×121=9,801 source cells (10,000 guard), 1 MiB JSON response maximum. One field step/request, point-series ≤64 steps/model.
 - Cold fresh-data-dir ingest benchmark: AIFS 7.294 s, IFS 5.590 s, including download, decode, NetCDF write/reload, and mass-balance verification; both below the 120 s budget. Script/report: `scripts/benchmark_ingest.py` and `artifacts/ingest-latency-stage2-0.json`.
-- NetCDF axes reloaded and JSON-list round-tripped as latitude 90→−90 and longitude −180→179.75, array order `[step_hours, latitude, longitude]`. Live API axis check remains to be confirmed with the HTTP client test.
+- NetCDF axes reloaded and JSON-list round-tripped as latitude 90→−90 and longitude −180→179.75, array order `[step_hours, latitude, longitude]`. Live API returned latitude `[20 … 0]`, longitude `[70 … 100]`, shape 81×121 and `[latitude,longitude]` ordering.
 
 ## Next
 
-## Stage 2 backend in progress (2026-11-19)
+## Stage 2 backend complete (2026-11-19)
 
 - Stage 2.0 data decisions committed as `6815c3c15a75dbdb7cf2bfc1227d0d1831462baa`.
 - Chose synchronous FastAPI handlers over Flask/async: local NetCDF snapshots, bounded slicing, schema validation/OpenAPI, and no asynchronous upstream work. Artifacts load read-only from `latest.json` at startup.
 - Implemented `/api/v1/health`, `/api/v1/point`, and `/api/v1/field` with common JSON errors, 12-hour stale metadata, clipping flags, 20°×30°/10,000-cell/1 MiB bounds, and the verified longitude order.
-- `scripts/test_api.py` against a running uvicorn instance passed endpoint shape, unit, coordinate, clipping, invalid request, missing-step, and payload assertions. Separate real servers with an empty data root and a 36-hour-old manifest both behaved as specified; failure outcomes still need to be written into the failure table before the failure-mode commit.
-- Initial HTTP timings: health 0.0060 s; first/second point request 0.0044/0.0038 s; max-size region 0.0072 s and 54,271 bytes (9,801 cells). These are loopback measurements on the current Windows host.
+- Pipeline attempts atomically write `ingest-status.json`; API reports latest-attempt state while continuing to serve a prior validated artifact. The status/error is safe for clients and omits internal exception text.
+- `scripts/test_api.py --failure-scenarios` passed on the live API and isolated real Uvicorn servers: healthy responses, no artifact (503), stale 36-hour artifact (still 200, stale true), failed ingest with last good artifact (still 200 and failed attempt reported), unavailable step (404), malformed request/bounds (400), coordinate order, clipping, payload bounds.
+- Latest HTTP timings: health 0.0226 s; first/repeat point 0.0056/0.0251 s; max-size region 0.0087 s and 54,330 bytes (9,801 cells). All are under 500 ms point and 1 s region budgets; loopback measurements on current Windows host.
+- `DECISIONS.md` now records observed failure modes and reconciles ingest status, response size, coordinates, and latency with the implementation.
 
 ## Known issues
 
-- The actual HTTP response has now confirmed the longitude/axis convention from NetCDF; record the exact response check in the contract reconciliation entry.
 - API service currently snapshots latest artifacts at startup; restart it after new pipeline output.
 - Front end and deployment remain unstarted. Do not begin Stage 3 before reporting Stage 2.
 
 ## Next
 
-Commit the endpoint implementation and client test, record observed failure modes, then add measured endpoint latencies and reconcile DECISIONS.md with the live implementation. Stop before Stage 3.
+Commit the failure evidence/status tracking and final contract/latency reconciliation. Report Stage 2 and stop before Stage 3.

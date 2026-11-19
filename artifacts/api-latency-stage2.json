@@ -1,9 +1,9 @@
 {
-  "measuredAtUtc": "2026-11-19T05:40:16.935088+00:00",
-  "healthSeconds": 0.008802,
-  "pointColdSeconds": 0.004864,
-  "pointWarmSeconds": 0.004669,
-  "regionMaxSeconds": 0.008968,
-  "regionBytes": 54271,
+  "measuredAtUtc": "2026-11-19T05:45:33.081349+00:00",
+  "healthSeconds": 0.022609,
+  "pointColdSeconds": 0.005609,
+  "pointWarmSeconds": 0.025141,
+  "regionMaxSeconds": 0.008683,
+  "regionBytes": 54330,
   "regionCells": 9801
 }

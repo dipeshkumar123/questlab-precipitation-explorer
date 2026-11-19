@@ -118,4 +118,22 @@ The processed NetCDF for both models reloads with latitude `90.0 → −90.0` (n
 - All errors are `{"error":{"code":"...","message":"...","details":{...}}}`. Invalid query values are 400; invalid model names 400; missing step is 404 with `details.availableSteps`; region extent/cell excess is 400; response byte excess is 413; unavailable model or no valid artifacts is 503. Server exceptions are logged locally and returned as generic 500 `internal_error`, never with a stack trace.
 - Point and field responses remain available when stale and include `stale` plus `ageSeconds`. The health response is the source of truth for all model states. No `/runs` endpoint exists because v1 intentionally serves latest only.
 
+## 2026-11-19 — Stage 2 failure evidence and latency reconciliation
+
+Each pipeline CLI attempt now atomically writes `data/processed/<model>/ingest-status.json` before execution and replaces it on success/failure. This lets health distinguish the most recent ingest attempt from the last verified forecast. A failed attempt returns nonzero, leaves the last successful `latest.json` untouched, and records only a safe public error summary. This path was exercised with invalid `--max-step 5`: the CLI returned exit 1 and wrote `state:"failed"`, `lastIngestSucceeded:false`, attempt/completion times, and safe error fields. Legacy artifacts without the status file are treated as successful based on their verified manifest. Health returns `lastIngestSucceeded`, `lastIngestAttemptedAtUtc`, and `lastError`; point and field include the success flag and attempt time.
+
+The client test `python scripts/test_api.py --failure-scenarios` ran against the actual Uvicorn/FastAPI service on 2026-11-19:
+
+| Scenario | Observed behavior |
+| --- | --- |
+| No manifest / no usable upstream result | Health, point, and field return 503 JSON errors with the common `{error:{code,message,details}}` shape. This exercises the API-visible outage condition using an empty isolated data directory; it does not contact ECMWF. |
+| Stale verified artifact | A 36-hour fixture reports health `stale:true` with age 129,603 s; point and field stay 200 and carry stale state and age. |
+| Missing step 48 | Field returns 404 `step_unavailable` and `availableSteps:[6,12,18,24]`. |
+| New ingest failure with prior valid artifact | Health stays 200 and marks model available, `lastIngestSucceeded:false`, attempt time, safe `ingest_failed`; point and field remain 200 from prior artifact. Private error text is not exposed. |
+| Invalid query / oversized bbox | 400 JSON errors with the common error shape. |
+
+The live API client asserted the maximum default region (`bbox=70,0,100,20`, stride 1) is 81×121 = 9,801 cells, axes are in contract order, and serialized interval response is 54,330 bytes (below the 1,048,576-byte limit). This interval region contains 8 clipped negative cells. It returns fewer than the 10,000-cell guard. Latencies from the latest run were health 22.6 ms, point first request 5.6 ms, point repeat 25.1 ms, and max region 8.7 ms. All are below the 500 ms point and 1 s region design budgets. Prior run measured health 38.2 ms, point 7.7/4.6 ms, and region 13.5 ms; these are single local observations, not a guarantee under other hosts or load. The current JSON measurement is `artifacts/api-latency-stage2.json`.
+
+The Stage 2 contract and implementation were reconciled after the test. Health now includes the ingest-status fields even when serving a prior artifact, and stale/failed forecasts remain readable as specified. No Stage 3 work has begun.
+
 The live HTTP client test later confirmed the field response preserves these axes: for `bbox=70,0,100,20`, latitude is `[20.0 … 0.0]` descending, longitude `[70.0 … 100.0]` ascending, shape `[81,121]`, and `arrayOrder` is `[latitude,longitude]`. All longitudes remain inside `[-180,180)`. This closes the NetCDF-to-JSON round-trip check from Task 2.0.5.
