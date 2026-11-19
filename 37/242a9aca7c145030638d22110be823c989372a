@@ -1,0 +1,65 @@
+README.md
+  s_72d32dcc9ba14d::t_c24b33c20bb042 112,114
+DECISIONS.md
+  s_72d32dcc9ba14d::t_c24b33c20bb042 247-250
+SESSION_NOTES.md
+  s_72d32dcc9ba14d::t_c24b33c20bb042 119-124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "autter_version": "2.2.1",
+  "base_commit_sha": "37242a9aca7c145030638d22110be823c989372a",
+  "branch": "master",
+  "prompts": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:4eab3115412ef72e63fdc2fa4c0c93d70856d3de85674b976ccdb676252ffb44",
+      "total_additions": 12,
+      "total_deletions": 2,
+      "accepted_lines": 13,
+      "overriden_lines": 0
+    }
+  },
+  "sessions": {
+    "s_72d32dcc9ba14d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f218-5ff0-73b3-9394-e61118a92b59",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Dipesh Kumar Panjiyar <dipesh@quest-lab.local>",
+      "messages_url": "cas:4eab3115412ef72e63fdc2fa4c0c93d70856d3de85674b976ccdb676252ffb44",
+      "stats": {
+        "total_additions": 12,
+        "total_deletions": 2,
+        "accepted_lines": 13,
+        "overriden_lines": 0,
+        "files": {
+          "DECISIONS.md": {
+            "total_additions": 4,
+            "total_deletions": 0,
+            "accepted_lines": 4,
+            "overriden_lines": 0
+          },
+          "README.md": {
+            "total_additions": 2,
+            "total_deletions": 2,
+            "accepted_lines": 2,
+            "overriden_lines": 0
+          },
+          "SESSION_NOTES.md": {
+            "total_additions": 6,
+            "total_deletions": 0,
+            "accepted_lines": 7,
+            "overriden_lines": 0
+          }
+        }
+      }
+    }
+  }
+}
