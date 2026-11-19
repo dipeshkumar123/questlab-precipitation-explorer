@@ -19,9 +19,8 @@
 
 ## Known issues
 
-- `--date latest` succeeded once and selected the same run already processed; freshness behavior will be implemented in Stage 2.
+- `--date latest` succeeded once and selected the same run already processed; API freshness behavior is implemented in Stage 2.
 - Pipeline currently defaults to a four-step, 24-hour horizon. Longer IFS horizons may not provide every 6-hour step; missing-step handling is explicit but those horizons were not verified.
-- At Stage 1 signoff, no back end, front end, deployment, or Stage 4 failure-mode test had started.
 - Session rollout path is still to be added to README during handover.
 
 ## Stage 2.0 complete (2026-11-19)
@@ -52,4 +51,13 @@
 
 ## Next
 
-Commit the failure evidence/status tracking and final contract/latency reconciliation. Report Stage 2 and stop before Stage 3.
+## Stage 3.0 complete (2026-11-19)
+
+- Cold/warm ingest benchmark rerun: AIFS 7.948/2.950 s; IFS 6.879/3.014 s, all below the 120 s budget. Warm is forced reprocessing from cached GRIB plus cfgrib index, without retrieval. Report: `artifacts/ingest-latency-stage2-0.json`.
+- Exhaustive step-24 tail analysis read 1,038,240 points per model and wrote full 1 mm histogram at/above 100 mm to `artifacts/model-tail-stage3-0.json`. AIFS tail count 200, max exact-value multiplicity 3, largest 1-mm bin count 9; IFS tail count 309, exact multiplicity 6, largest 1-mm bin count 12. No ceiling-style repeated-value spike.
+- AIFS unique max 243.4375 mm at (−11.50, −162.75); IFS unique max 574.707031 mm at (−13.75, −147.00). Different cells. Verdict recorded: “model divergence confirmed.”
+- UX rationale/framework/rejected alternatives were written to DECISIONS.md before frontend implementation. Chosen experience: bounded point-anchored side-by-side regional fields plus a clicked-cell full forecast fingerprint across models; no global map request.
+
+## Next
+
+Build the static front end described in DECISIONS.md. Verify real backend data, spatial orientation and log colour treatment, then test unavailable backend, stale artifact, and missing-step states before documenting build/deployment.

@@ -1,10 +1,15 @@
 {
-  "measuredAtUtc": "2026-11-19T05:27:59.679978+00:00",
+  "measuredAtUtc": "2026-11-19T05:59:32.498017+00:00",
   "run": "2026-11-18T18:00:00Z",
   "results": [
     {
       "model": "aifs-single",
-      "command": [
+      "coldWallSeconds": 7.948,
+      "coldExitCode": 0,
+      "warmWallSeconds": 2.95,
+      "warmExitCode": 0,
+      "coldCache": "fresh data-dir with no GRIB, NetCDF, or cfgrib index files",
+      "warmCommand": [
         "D:\\Projects\\quest_lab\\.venv\\Scripts\\python.exe",
         "-m",
         "questlab.pipeline",
@@ -17,15 +22,19 @@
         "--max-step",
         "24",
         "--data-dir",
-        "D:\\Projects\\quest_lab\\data\\benchmark\\cold-20261119T052759Z\\aifs-single"
+        "D:\\Projects\\quest_lab\\data\\benchmark\\cold-20261119T055932Z\\aifs-single",
+        "--force"
       ],
-      "wallSeconds": 7.294,
-      "exitCode": 0,
-      "cache": "fresh data-dir with no GRIB, NetCDF, or cfgrib index files"
+      "warmCache": "same data-dir; reprocess downloaded GRIB with existing cfgrib index and no network retrieval"
     },
     {
       "model": "ifs",
-      "command": [
+      "coldWallSeconds": 6.879,
+      "coldExitCode": 0,
+      "warmWallSeconds": 3.014,
+      "warmExitCode": 0,
+      "coldCache": "fresh data-dir with no GRIB, NetCDF, or cfgrib index files",
+      "warmCommand": [
         "D:\\Projects\\quest_lab\\.venv\\Scripts\\python.exe",
         "-m",
         "questlab.pipeline",
@@ -38,11 +47,10 @@
         "--max-step",
         "24",
         "--data-dir",
-        "D:\\Projects\\quest_lab\\data\\benchmark\\cold-20261119T052759Z\\ifs"
+        "D:\\Projects\\quest_lab\\data\\benchmark\\cold-20261119T055932Z\\ifs",
+        "--force"
       ],
-      "wallSeconds": 5.59,
-      "exitCode": 0,
-      "cache": "fresh data-dir with no GRIB, NetCDF, or cfgrib index files"
+      "warmCache": "same data-dir; reprocess downloaded GRIB with existing cfgrib index and no network retrieval"
     }
   ]
 }

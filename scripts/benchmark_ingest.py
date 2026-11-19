@@ -43,13 +43,26 @@ def main() -> None:
             print("stderr:", completed.stderr.strip())
         if completed.returncode:
             raise SystemExit(completed.returncode)
+        warm_command = [*command, "--force"]
+        warm_started = time.perf_counter()
+        warm = subprocess.run(warm_command, cwd=ROOT, capture_output=True, text=True)
+        warm_elapsed = time.perf_counter() - warm_started
+        print(f"{model}: warm_returncode={warm.returncode} wall_seconds={warm_elapsed:.3f}")
+        print(warm.stdout.strip())
+        if warm.stderr.strip():
+            print("warm stderr:", warm.stderr.strip())
+        if warm.returncode:
+            raise SystemExit(warm.returncode)
         results.append(
             {
                 "model": model,
-                "command": command,
-                "wallSeconds": round(elapsed, 3),
-                "exitCode": completed.returncode,
-                "cache": "fresh data-dir with no GRIB, NetCDF, or cfgrib index files",
+                "coldWallSeconds": round(elapsed, 3),
+                "coldExitCode": completed.returncode,
+                "warmWallSeconds": round(warm_elapsed, 3),
+                "warmExitCode": warm.returncode,
+                "coldCache": "fresh data-dir with no GRIB, NetCDF, or cfgrib index files",
+                "warmCommand": warm_command,
+                "warmCache": "same data-dir; reprocess downloaded GRIB with existing cfgrib index and no network retrieval",
             }
         )
     report = {"measuredAtUtc": measured_at.isoformat(), "run": "2026-11-18T18:00:00Z", "results": results}

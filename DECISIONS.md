@@ -95,7 +95,7 @@ Measured with `scripts/benchmark_ingest.py` on 2026-11-19 for the pinned 2026-11
 
 ### 2.0.5 Longitude convention and round-trip
 
-The processed NetCDF for both models reloads with latitude `90.0 → −90.0` (north-to-south) and longitude `−180.0 → 179.75` (ascending, convention `[-180, 180)`). The values remain ordered `[step_hours, latitude, longitude]`. `scripts/verify_longitude.py` round-tripped both full axis arrays through the same JSON list representation planned for `/api/v1/field` and verified neither axis flips. The API must return these axes directly, with `arrayOrder:"[latitude,longitude]"`; the live HTTP response will be asserted by the Stage 2 client test before this task is finally considered closed.
+The processed NetCDF for both models reloads with latitude `90.0 → −90.0` (north-to-south) and longitude `−180.0 → 179.75` (ascending, convention `[-180, 180)`). The values remain ordered `[step_hours, latitude, longitude]`. `scripts/verify_longitude.py` round-tripped both full axis arrays through the same JSON list representation planned for `/api/v1/field` and verified neither axis flips. The live API client confirmed the contract on `bbox=70,0,100,20`: latitude `[20 … 0]`, longitude `[70 … 100]`, shape `[81,121]`, `arrayOrder:"[latitude,longitude]"`.
 
 ### Updated v1 contract requirements
 
@@ -137,3 +137,43 @@ The live API client asserted the maximum default region (`bbox=70,0,100,20`, str
 The Stage 2 contract and implementation were reconciled after the test. Health now includes the ingest-status fields even when serving a prior artifact, and stale/failed forecasts remain readable as specified. No Stage 3 work has begun.
 
 The live HTTP client test later confirmed the field response preserves these axes: for `bbox=70,0,100,20`, latitude is `[20.0 … 0.0]` descending, longitude `[70.0 … 100.0]` ascending, shape `[81,121]`, and `arrayOrder` is `[latitude,longitude]`. All longitudes remain inside `[-180,180)`. This closes the NetCDF-to-JSON round-trip check from Task 2.0.5.
+
+## 2026-11-19 — Stage 3.0 evidence gate
+
+### 3.0.1 Ingest latency
+
+Re-ran `scripts/benchmark_ingest.py` for the pinned 2026-11-18 18Z run. Cold means a new data directory with no GRIB, NetCDF, or cfgrib index; warm means forced reprocessing from the GRIB downloaded by that cold run, with its existing cfgrib index and no network retrieval.
+
+| Model | Cold seconds | Warm reprocess seconds | Result vs ≤120 s |
+| --- | ---: | ---: | --- |
+| AIFS Single | 7.948 | 2.950 | Pass |
+| IFS | 6.879 | 3.014 | Pass |
+
+Both products reported 0 mm mass-balance error. The latest report is `artifacts/ingest-latency-stage2-0.json`; `scripts/benchmark_ingest.py` now measures cold and warm reprocess times on each run. These wall times include retrieval only in the cold pass and are observations on the current host/network.
+
+### 3.0.2 Exhaustive step-24 tail and maxima
+
+`scripts/analyze_divergence.py` read every decoded `tp_cumulative_mm` cell at step 24 from both NetCDFs: 1,038,240 finite grid points per model. It wrote every 1 mm bin count from 100 mm through each field maximum to `artifacts/model-tail-stage3-0.json`; this is a full histogram, not a top-N sample. In the whole ≥100 mm tail, AIFS has 200 cells and IFS 309. Maximum exact-value multiplicity in that tail is 3 for AIFS and 6 for IFS; the most occupied 1 mm bins contain 9 cells (100–101 mm, AIFS) and 12 cells (102–103 mm, IFS). The complete 10 mm count distributions are:
+
+- AIFS, 100–250 mm bins: `55,47,29,16,14,11,6,1,2,6,4,1,3,3,2`.
+- IFS, 100–580 mm bins: `88,49,44,34,20,15,16,4,2,6,8,1,4,2,2,4,1,1,1,2,0,0,0,1,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0`.
+
+There is no single decoded value or 1 mm bin with anomalous repeated occupancy at the upper tail: peak-bin counts remain 9/1,038,240 and 12/1,038,240, and the exact-value multiplicity is at most 3/6. The AIFS unique maximum is **243.4375 mm at (−11.50°, −162.75°)**; the IFS unique maximum is **574.707031 mm at (−13.75°, −147.00°)**. They occupy different grid cells, 16 latitude rows and 63 longitude columns apart on the non-wrapping stored axis. They are different maxima, not a same-cell magnitude mismatch. This supports spatial model comparison; it does not establish which model is more accurate.
+
+**Verdict: model divergence confirmed.**
+
+### 3.1 UX rationale and implementation choice — recorded before front-end code
+
+**UX rationale:** A user can select a bounded rain field and click a cell to connect its surrounding spatial pattern to the full four-step AIFS/IFS rainfall fingerprint at that nearest grid point, which a static map or a line chart alone cannot show together.
+
+The real inspected field has coherent tropical rain belts and curved mid-latitude bands, while its roughly 25 km grid supports global and broad-regional patterns rather than city-scale judgments. The independently located IFS and AIFS maxima (above) make a regional side-by-side comparison scientifically defensible as a comparison of model outputs, with no claim about accuracy. The map is a context window anchored on a selected point, up to 20° latitude ×30° longitude; the 10,000-cell/1 MiB endpoint bound rules out a one-request global map. The interaction does not depend on global coverage: the chosen point and its bounded context are the task, and the timeline conveys forecast evolution.
+
+Interval-field responses surface a visible data-quality badge with the API's clipped-cell count and state that negative values were floored to zero. Cumulative mode labels clipping as not applicable. The UI also shows run initialization time, valid time, and forecast age from health.
+
+Rejected alternatives:
+
+1. A global map with a time slider would exceed the single-request region cap and encourage users to watch colors change without connecting a location to its full forecast sequence. Tiling or client downsampling would add complexity and distort the data for this point-anchored task.
+2. A threshold-only Boolean surface would hide amounts and the four-step evolution; no user impact threshold or accumulation window is validated in this project.
+3. A point-only line chart would lose the coherent rain belts and curved bands that explain spatial context; it is retained as the detail view, not the whole product.
+
+**Framework:** Static HTML, CSS, and JavaScript with Canvas for the bounded grids and SVG for the point fingerprint. A small Python build script copies assets and writes `config.js` from `QUEST_API_BASE_URL`; no component framework or frontend server is needed for this one-screen, no-route interaction. React/Vite was rejected because its component state and bundler provide little benefit here but add dependencies and a toolchain. Deployment target: static files in `dist/`; use a same-origin reverse proxy that forwards `/api` to FastAPI and build with an empty base URL, avoiding CORS. Local verification can use `python -m http.server 5173` and the API on port 8000, allowed by the current localhost CORS configuration.
