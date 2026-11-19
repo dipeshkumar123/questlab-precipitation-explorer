@@ -93,3 +93,13 @@ Report Stage 3. Do not begin Stage 4 (deployment) until user review.
 - Public deployment, URL and Stage 5.2 cross-browser/deployed verification remain outstanding.
 - Private source repo created and pushed: https://github.com/dipeshkumar123/questlab-precipitation-explorer (commits through `1995d4b`). Only the selected processed snapshot files were added; raw GRIB/cache data and `.deploy/context` remain excluded.
 - Render GitHub app permission is now restricted to that single private repository. The Render new-service page still reports “No repositories found” after the authorization redirect. User handoff is open to finish/reconnect GitHub from the Render picker; no service or public URL exists yet.
+
+## Stage 5.2 — Render deployed and verified (2026-11-19)
+
+- User changed the repository to public and connected it in Render. Created `questlab-precipitation-explorer` as a Free Docker web service in Oregon, project `quest`, production environment, branch `master`. No paid tier was selected. The first deploy of commit `9206198` succeeded; Render logs reported the service live.
+- Live URL: https://questlab-precipitation-explorer.onrender.com/.
+- Edge and Brave both loaded the page over HTTPS with the stale banner, both 9,801-cell forecast fields, and a complete four-step point profile. Verified region inputs and step/field selection; clicked the AIFS map and saw the selected grid cell and profile update. At a second region/step, both fields loaded.
+- Browser same-origin `/api/v1/health` and point endpoint returned expected data. Missing step 48 returned JSON error naming `[6,12,18,24]`. Pacific interval view displayed clipping counts; cumulative view displayed shared 0.1–575 mm log scale. The stale banner stated the snapshot exceeded the 12-hour threshold while remaining viewable.
+- Deployment is HTTPS and same-origin API calls worked, so no CORS setup was needed. Console log inspection found no browser errors. A direct PowerShell request met a Cloudflare challenge, and was excluded from service-health conclusions.
+- Deployed API-worker stop injection and precise paint/data timing were not verified. Local Docker already verified outage behavior: root 200 and API health 502 after stopping only Uvicorn. Render Free console/Shell access was not used for failure injection. Render Free can sleep after 15 minutes; cold-start latency was not timed.
+- Source repo is now public at https://github.com/dipeshkumar123/questlab-precipitation-explorer. Notes updated after live verification.
